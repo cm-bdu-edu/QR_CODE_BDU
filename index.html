@@ -133,51 +133,51 @@
     // };
 
     window.generateAndSaveQRCode = async function () {
-  const contentInput = document.getElementById("qr-content").value.trim();
-  const qrNameInput = document.getElementById("qr-name").value.trim();
-  const qrImage = document.getElementById("qr-image");
-  const downloadBtn = document.getElementById("download-btn");
+      const contentInput = document.getElementById("qr-content").value.trim();
+      const qrNameInput = document.getElementById("qr-name").value.trim();
+      const qrImage = document.getElementById("qr-image");
+      const downloadBtn = document.getElementById("download-btn");
 
-  if (!contentInput || !qrNameInput) {
-    alert("Vui lòng nhập cả nội dung và tên QR Code!");
-    return;
-  }
+      if (!contentInput || !qrNameInput) {
+        alert("Vui lòng nhập cả nội dung và tên QR Code!");
+        return;
+      }
 
-  try {
-    // Lưu dữ liệu vào Firebase
-    const qrCodeRef = ref(database, "qrCodes");
-    const newQRCodeRef = push(qrCodeRef);
-    const timestamp = new Date().toISOString();
+      try {
+        // Lưu dữ liệu vào Firebase
+        const qrCodeRef = ref(database, "qrCodes");
+        const newQRCodeRef = push(qrCodeRef);
+        const timestamp = new Date().toISOString();
 
-    // Lưu nội dung gốc vào Firebase
-    await set(newQRCodeRef, {
-      name: qrNameInput,
-      content: contentInput,
-      createdAt: timestamp,
-    });
+        // Lưu nội dung gốc vào Firebase
+        await set(newQRCodeRef, {
+          name: qrNameInput,
+          content: contentInput,
+          createdAt: timestamp,
+        });
 
-    // Tạo URL trung gian trỏ đến nội dung Firebase
-    const redirectURL = `${window.location.origin}/redirect.html?id=${newQRCodeRef.key}`;
+        // Tạo URL trung gian trỏ đến nội dung Firebase
+        const redirectURL = `${window.location.origin}/QR_CODE_BDU/redirect.html?id=${newQRCodeRef.key}`;
 
-    // Tạo mã QR với URL trung gian
-    const qrCodeDataURL = await QRCode.toDataURL(redirectURL, { width: 200, margin: 2 });
-    qrImage.src = qrCodeDataURL;
+        // Tạo mã QR với URL trung gian
+        const qrCodeDataURL = await QRCode.toDataURL(redirectURL, { width: 200, margin: 2 });
+        qrImage.src = qrCodeDataURL;
 
-    alert("Mã QR đã được tạo thành công!");
+        alert("Mã QR đã được tạo thành công!");
 
-    // Hiển thị nút tải mã QR
-    downloadBtn.classList.remove("hidden");
-    downloadBtn.onclick = () => {
-      const link = document.createElement("a");
-      link.href = qrCodeDataURL;
-      link.download = `${qrNameInput}.png`;
-      link.click();
+        // Hiển thị nút tải mã QR
+        downloadBtn.classList.remove("hidden");
+        downloadBtn.onclick = () => {
+          const link = document.createElement("a");
+          link.href = qrCodeDataURL;
+          link.download = `${qrNameInput}.png`;
+          link.click();
+        };
+      } catch (error) {
+        console.error("Error generating or saving QR Code:", error);
+        alert("Không thể tạo hoặc lưu Mã QR.");
+      }
     };
-  } catch (error) {
-    console.error("Error generating or saving QR Code:", error);
-    alert("Không thể tạo hoặc lưu Mã QR.");
-  }
-};
 
 
   </script>
