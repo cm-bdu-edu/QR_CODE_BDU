@@ -34,6 +34,23 @@
       <p id="toggle-auth" class="text-sm text-center mt-4 cursor-pointer text-blue-500 hover:underline">
         Chưa có tài khoản? Đăng ký ngay
       </p>
+      <!-- link để truy cập tính năng quên mật khẩu -->
+      <p id="forgot-password" class="text-sm text-center mt-4 cursor-pointer text-red-500 hover:underline">
+        Quên mật khẩu?
+      </p>
+    </div>
+
+    <!-- Form quên mật khẩu -->
+    <div id="reset-container" class="bg-white p-6 rounded-lg shadow-lg max-w-md mx-auto hidden">
+      <h2 class="text-lg font-semibold mb-4 text-center">Quên Mật Khẩu</h2>
+      <div id="reset-error-message" class="text-red-500 text-sm mb-4 hidden"></div>
+      <input id="reset-email" type="email" placeholder="Email" class="w-full p-3 border rounded-md mb-4" />
+      <button id="reset-action" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 w-full">
+        Gửi liên kết đặt lại mật khẩu
+      </button>
+      <p id="back-to-login" class="text-sm text-center mt-4 cursor-pointer text-blue-500 hover:underline">
+        Quay lại Đăng Nhập
+      </p>
     </div>
   </main>
 
@@ -108,6 +125,51 @@
     const clearErrorMessage = () => {
       errorMessage.classList.add("hidden");
     };
+
+    //logic quên mật khẩu
+    import {
+      sendPasswordResetEmail,
+    } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+
+    const forgotPasswordLink = document.getElementById("forgot-password");
+    const resetContainer = document.getElementById("reset-container");
+    const resetEmailInput = document.getElementById("reset-email");
+    const resetAction = document.getElementById("reset-action");
+    const resetErrorMessage = document.getElementById("reset-error-message");
+    const backToLogin = document.getElementById("back-to-login");
+
+    // Chuyển sang giao diện quên mật khẩu
+    forgotPasswordLink.addEventListener("click", () => {
+      authContainer.classList.add("hidden");
+      resetContainer.classList.remove("hidden");
+    });
+
+    // Quay lại giao diện đăng nhập
+    backToLogin.addEventListener("click", () => {
+      resetContainer.classList.add("hidden");
+      authContainer.classList.remove("hidden");
+    });
+
+    // Xử lý yêu cầu đặt lại mật khẩu
+    resetAction.addEventListener("click", async () => {
+      const email = resetEmailInput.value.trim();
+      if (!email) {
+        resetErrorMessage.textContent = "Vui lòng nhập email.";
+        resetErrorMessage.classList.remove("hidden");
+        return;
+      }
+
+      try {
+        await sendPasswordResetEmail(auth, email);
+        alert("Liên kết đặt lại mật khẩu đã được gửi đến email của bạn.");
+        resetContainer.classList.add("hidden");
+        authContainer.classList.remove("hidden");
+      } catch (error) {
+        resetErrorMessage.textContent = error.message;
+        resetErrorMessage.classList.remove("hidden");
+      }
+    });
+
   </script>
 </body>
 
