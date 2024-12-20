@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Code BDU Authentication</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="shortcut icon" href="./image/Logo.ico" type="image/x-icon">
+
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+    }
+  </style>
+</head>
+
+<body class="bg-white-400 text-gray-800">
+  <header class="bg-blue-600 text-white p-4">
+    <div class="container mx-auto flex items-center justify-between">
+      <h1 class="text-2xl font-bold">Trình tạo mã QR</h1>
+    </div>
+  </header>
+
+  <main class="container mx-auto mt-6">
+    <!-- Login & Register -->
+    <div id="auth-container" class="bg-white p-6 rounded-lg shadow-lg max-w-md mx-auto">
+      <h2 id="auth-title" class="text-lg font-semibold mb-4 text-center">Đăng Nhập</h2>
+      <div id="error-message" class="text-red-500 text-sm mb-4 hidden"></div>
+      <input id="email" type="email" placeholder="Email" class="w-full p-3 border rounded-md mb-4" />
+      <input id="password" type="password" placeholder="Mật khẩu" class="w-full p-3 border rounded-md mb-4" />
+      <button id="auth-action" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 w-full">Đăng
+        Nhập</button>
+      <p id="toggle-auth" class="text-sm text-center mt-4 cursor-pointer text-blue-500 hover:underline">
+        Chưa có tài khoản? Đăng ký ngay
+      </p>
+    </div>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+    import {
+      getAuth,
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      onAuthStateChanged,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDnkxcPxH3Gw0l-BNro17KKX2AEV_6bsaE",
+      authDomain: "qr-code-65808.firebaseapp.com",
+      databaseURL: "https://qr-code-65808-default-rtdb.firebaseio.com",
+      projectId: "qr-code-65808",
+      storageBucket: "qr-code-65808.firebasestorage.app",
+      messagingSenderId: "953231243938",
+      appId: "1:953231243938:web:318fde18c08154e01df5fb",
+      measurementId: "G-FMV89YRW06"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const authContainer = document.getElementById("auth-container");
+    const authTitle = document.getElementById("auth-title");
+    const authAction = document.getElementById("auth-action");
+    const toggleAuth = document.getElementById("toggle-auth");
+    const errorMessage = document.getElementById("error-message");
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+
+    let isLogin = true;
+
+    toggleAuth.addEventListener("click", () => {
+      isLogin = !isLogin;
+      authTitle.textContent = isLogin ? "Đăng Nhập" : "Đăng Ký";
+      authAction.textContent = isLogin ? "Đăng Nhập" : "Đăng Ký";
+      toggleAuth.textContent = isLogin
+        ? "Chưa có tài khoản? Đăng ký ngay"
+        : "Đã có tài khoản? Đăng nhập ngay";
+    });
+
+    authAction.addEventListener("click", async () => {
+      const email = emailInput.value.trim();
+      const password = passwordInput.value.trim();
+      if (!email || !password) {
+        showErrorMessage("Vui lòng nhập email và mật khẩu");
+        return;
+      }
+
+      try {
+        if (isLogin) {
+          await signInWithEmailAndPassword(auth, email, password);
+        } else {
+          await createUserWithEmailAndPassword(auth, email, password);
+        }
+        window.location.href = "create_qrcode.html";
+      } catch (error) {
+        showErrorMessage(error.message);
+      }
+    });
+
+    const showErrorMessage = (message) => {
+      errorMessage.textContent = message;
+      errorMessage.classList.remove("hidden");
+    };
+
+    const clearErrorMessage = () => {
+      errorMessage.classList.add("hidden");
+    };
+  </script>
+</body>
+
+</html>
