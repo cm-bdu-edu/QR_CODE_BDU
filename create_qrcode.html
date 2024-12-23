@@ -227,101 +227,10 @@
         // Khai báo biến để lưu trữ unsubscribe function
         let qrCodesListener = null;
 
-        // Hàm thêm logo vào QR code
-        async function addLogoToQRCode(qrDataUrl, logoUrl, size = 500) {
-            return new Promise((resolve, reject) => {
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                const qrImage = new Image();
-                const logoImage = new Image();
-
-                canvas.width = size;
-                canvas.height = size;
-
-                qrImage.onload = () => {
-                    // Vẽ QR code
-                    ctx.drawImage(qrImage, 0, 0, size, size);
-
-                    logoImage.onload = () => {
-                        // Tính toán kích thước và vị trí logo
-                        const logoSize = size * 0.25; // Logo chiếm 25% kích thước QR
-                        const logoX = (size - logoSize) / 2;
-                        const logoY = (size - logoSize) / 2;
-
-                        // Tạo vùng tròn cho logo
-                        ctx.beginPath();
-                        ctx.arc(logoX + logoSize / 2, logoY + logoSize / 2, logoSize / 2, 0, 2 * Math.PI);
-                        ctx.fillStyle = 'white';
-                        ctx.fill();
-
-                        // Tạo đường viền cho logo
-                        ctx.strokeStyle = '#000';
-                        ctx.lineWidth = 2;
-                        ctx.stroke();
-
-                        // Vẽ logo trong vùng tròn
-                        ctx.save();
-                        ctx.clip();
-                        ctx.drawImage(logoImage, logoX, logoY, logoSize, logoSize);
-                        ctx.restore();
-
-                        resolve(canvas.toDataURL('image/ico'));
-                    };
-
-                    logoImage.onerror = () => {
-                        console.error('Lỗi khi tải logo');
-                        resolve(qrDataUrl); // Trả về QR code không có logo nếu lỗi
-                    };
-                    logoImage.src = logoUrl;
-                };
-
-                qrImage.onerror = () => {
-                    console.error('Lỗi khi tải QR code');
-                    reject(new Error('Không thể tải QR code'));
-                };
-                qrImage.src = qrDataUrl;
-            });
-        }
-
-        // Hàm tạo và lưu QR code
-        // window.generateAndSaveQRCode = async function () {
-        //     const name = document.getElementById("qr-name").value.trim();
-        //     const content = document.getElementById("qr-content").value.trim();
-
-        //     if (!name || !content || !currentUser) {
-        //         alert("Vui lòng nhập đủ thông tin hoặc đăng nhập lại!");
-        //         return;
-        //     }
-
-        //     try {
-        //         const qrRef = ref(database, "qrCodes");
-        //         const newQRCodeRef = push(qrRef);
-        //         const redirectURL = `${window.location.origin}/QR_CODE_BDU/redirect.html?id=${newQRCodeRef.key}`;
-
-        //         await set(newQRCodeRef, {
-        //             userId: currentUser.uid,
-        //             name,
-        //             content,
-        //             redirectURL,
-        //             createdAt: new Date().toISOString()
-        //         });
-
-        //         // Reset form
-        //         document.getElementById("qr-name").value = "";
-        //         document.getElementById("qr-content").value = "";
-
-        //         alert("Tạo mã QR thành công!");
-        //         loadQRCodes(currentUser.uid);
-        //     } catch (error) {
-        //         console.error("Lỗi khi tạo QR code:", error);
-        //         alert("Có lỗi xảy ra khi tạo mã QR!");
-        //     }
-        // };
-
         window.generateAndSaveQRCode = async function () {
             const name = document.getElementById("qr-name").value.trim();
             const content = document.getElementById("qr-content").value.trim();
-            const color = document.getElementById("qr-color").value; // Lấy màu được chọn
+            const color = document.getElementById("qr-color").value;
 
             if (!name || !content || !currentUser) {
                 alert("Vui lòng nhập đủ thông tin hoặc đăng nhập lại!");
@@ -333,52 +242,20 @@
                 const newQRCodeRef = push(qrRef);
                 const redirectURL = `${window.location.origin}/QR_CODE_BDU/redirect.html?id=${newQRCodeRef.key}`;
 
+                // Save QR code data including the color
                 await set(newQRCodeRef, {
                     userId: currentUser.uid,
                     name,
                     content,
                     redirectURL,
+                    color, // Save the selected color
                     createdAt: new Date().toISOString()
                 });
-
-                const qrCanvas = document.createElement("canvas");
-                const ctx = qrCanvas.getContext("2d");
-
-                // Tạo QR code
-                const qrDataUrl = await QRCode.toDataURL(content, {
-                    width: 300,
-                    margin: 2,
-                    color: {
-                        dark: color, // Sử dụng màu đã chọn
-                        light: "#ffffff"
-                    }
-                });
-
-                const qrImage = new Image();
-                qrImage.src = qrDataUrl;
-
-                qrImage.onload = () => {
-                    qrCanvas.width = 300;
-                    qrCanvas.height = 300;
-                    ctx.drawImage(qrImage, 0, 0);
-
-                    // Thêm tên "BDU"
-                    ctx.font = "20px Arial";
-                    ctx.fillStyle = color;
-                    ctx.textAlign = "center";
-                    ctx.fillText("BDU", qrCanvas.width / 2, qrCanvas.height - 20);
-
-                    // Lưu QR code đã thêm tên
-                    const qrFinalUrl = qrCanvas.toDataURL("image/png");
-                    const link = document.createElement("a");
-                    link.href = qrFinalUrl;
-                    // link.download = `${name}.png`;
-                    // link.click();
-                };
 
                 // Reset form
                 document.getElementById("qr-name").value = "";
                 document.getElementById("qr-content").value = "";
+                document.getElementById("qr-color").value = "#000000";
 
                 alert("Tạo mã QR thành công!");
                 loadQRCodes(currentUser.uid);
@@ -386,25 +263,88 @@
                 console.error("Lỗi khi tạo QR code:", error);
                 alert("Có lỗi xảy ra khi tạo mã QR!");
             }
+        };
+
+
+        // Hàm tải ảnh từ URL
+        function loadImage(url) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.crossOrigin = "Anonymous"; // Cho phép tải ảnh từ các nguồn khác
+                img.onload = () => resolve(img);
+                img.onerror = (err) => reject(err);
+                img.src = url;
+            });
         }
 
-
-        // Hàm tải xuống QR code
+        // Hàm tải xuống QR code với logo
         async function downloadQRCode(dataURL, fileName) {
             try {
-                // Lưu QR code đã thêm tên
-                const logoUrl = './image/Logo.ico'; // URL của logo
-                const qrWithLogo = await addLogoToQRCode(dataURL, logoUrl, 1000); // Tăng kích thước khi tải xuống
+                const logoUrl = './image/Logo.ico'; // Đường dẫn logo
+                const qrSize = 350; // Kích thước QR code
+                const logoSize = 80; // Kích thước logo (tỷ lệ hợp lý so với QR)
+                const padding = 10; // Viền trắng tối thiểu
+                const dpi = 5; // Tăng độ phân giải lên gấp năm
 
-                const link = document.createElement("a");
-                link.href = qrWithLogo;
+                // Tạo và tải ảnh QR code
+                const qrImage = new Image();
+                qrImage.src = dataURL;
+                await new Promise((resolve, reject) => {
+                    qrImage.onload = resolve;
+                    qrImage.onerror = reject;
+                });
+
+                // Tạo và tải ảnh logo
+                const logoImage = new Image();
+                logoImage.src = logoUrl;
+                await new Promise((resolve, reject) => {
+                    logoImage.onload = resolve;
+                    logoImage.onerror = reject;
+                });
+
+                // Tính kích thước canvas
+                const canvasSize = qrSize + padding * 2; // Thêm viền vào QR code
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+
+                // Đặt độ phân giải cao hơn
+                canvas.width = canvasSize * dpi;
+                canvas.height = (canvasSize + 60) * dpi; // Thêm không gian cho chữ
+                ctx.scale(dpi, dpi); // Thu nhỏ kích thước lại để phù hợp độ phân giải
+
+                // Vẽ nền trắng
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvas.width / dpi, canvas.height / dpi);
+
+                // Vẽ QR code vào giữa canvas
+                const qrX = padding;
+                const qrY = padding;
+                ctx.drawImage(qrImage, qrX, qrY, qrSize, qrSize);
+
+                // Vẽ logo vào trung tâm QR code mà không có viền trắng
+                const logoX = (qrSize - logoSize) / 2 + padding; // Căn logo vào trung tâm QR
+                const logoY = (qrSize - logoSize) / 2 + padding; // Căn logo vào trung tâm QR
+                ctx.drawImage(logoImage, logoX, logoY, logoSize, logoSize);
+
+                // Thêm chữ phía dưới QR code
+                const text = "BINH DUONG UNIVERSITY";
+                ctx.font = "20px Arial";
+                ctx.fillStyle = "#d32f2f"; // Màu chữ
+                ctx.textAlign = "center";
+                ctx.fillText(text, canvasSize / 2, canvasSize + 20); // Căn giữa và cách QR px
+
+                // Tải ảnh đã chỉnh sửa
+                const finalQRCode = canvas.toDataURL('image/png', 1.0); // Tăng chất lượng ảnh
+                const link = document.createElement('a');
+                link.href = finalQRCode;
                 link.download = fileName;
                 link.click();
             } catch (error) {
-                console.error('Lỗi khi tải xuống QR code:', error);
+                console.error("Lỗi khi tải xuống QR code:", error);
                 alert("Có lỗi xảy ra khi tải xuống mã QR!");
             }
         }
+
 
         // Hàm tải danh sách QR codes
         async function loadQRCodes(userId) {
@@ -415,13 +355,11 @@
             const qrRef = ref(database, "qrCodes");
             const userQrQuery = query(qrRef, orderByChild("userId"), equalTo(userId));
 
-            // Lưu hàm unsubscribe để có thể hủy đăng ký sau này
             qrCodesListener = onValue(userQrQuery, async (snapshot) => {
                 qrList.innerHTML = "";
                 const data = snapshot.val();
 
                 if (data) {
-                    // Chuyển đổi thành mảng và sắp xếp theo thời gian tạo
                     const qrArray = Object.entries(data).map(([key, value]) => ({ key, ...value }));
                     qrArray.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
@@ -431,24 +369,44 @@
 
                         const img = document.createElement("img");
                         try {
-                            // Tạo QR code với logo
+                            // Generate QR code with stored color
                             const qrDataUrl = await QRCode.toDataURL(qr.redirectURL, {
                                 width: 100,
                                 margin: 2,
                                 color: {
-                                    dark: "#000000",
+                                    dark: qr.color || "#000000", // Use stored color or default to black
                                     light: "#ffffff"
                                 }
                             });
 
-                            const qrWithLogo = await addLogoToQRCode(qrDataUrl, './image/Logo.ico', 100);
-                            img.src = qrWithLogo;
+                            // Create canvas for adding BDU text
+                            const canvas = document.createElement('canvas');
+                            const ctx = canvas.getContext('2d');
+                            const qrImage = new Image();
+
+                            qrImage.onload = () => {
+                                // Set the canvas dimensions to match the QR code image
+                                canvas.width = qrImage.width;
+                                canvas.height = qrImage.height;
+
+                                // Fill the canvas background with white
+                                ctx.fillStyle = '#ffffff';
+                                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                                // Draw the QR code centered horizontally
+                                ctx.drawImage(qrImage, 0, 0);
+
+                                // Set the generated image as the source for the <img> tag
+                                img.src = canvas.toDataURL('image/png');
+                            };
+
+                            // Load the QR code image
+                            qrImage.src = qrDataUrl;
+
+
+
                         } catch (error) {
                             console.error('Lỗi khi tạo QR code:', error);
-                            img.src = await QRCode.toDataURL(qr.redirectURL, {
-                                width: 100,
-                                margin: 2
-                            });
                         }
                         qrItem.appendChild(img);
 
