@@ -149,7 +149,10 @@
                 <div class="mb-4">
                     <label for="qr-color" class="block font-medium mb-2">Chọn màu mã QR</label>
                     <input type="color" id="qr-color" value="#000000" class="w-full p-3 border rounded-md">
+                    <div id="color-display" class="w-16 h-5 border rounded-md mt-2" style="background-color: #000000;"></div>
                 </div>
+
+               
 
                 <button onclick="generateAndSaveQRCode()"
                     class="w-full sm:w-auto bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
@@ -587,6 +590,14 @@
             }
         });
 
+        // Lắng nghe sự kiện khi người dùng thay đổi màu sắc
+        document.getElementById('qr-color').addEventListener('input', function(event) {
+            // Lấy giá trị màu sắc đã chọn từ input màu
+            const selectedColor = event.target.value;
+
+            // Cập nhật màu nền của ô hiển thị màu
+            document.getElementById('color-display').style.backgroundColor = selectedColor;
+        });
         // Export functions for global access
         window.generateAndSaveQRCode = createAndSaveQRCode;
         window.validateURL = validateURL;
