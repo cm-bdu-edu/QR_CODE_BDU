@@ -68,6 +68,26 @@
             max-width: 200px;
         }
 
+        /* Chỉnh sửa giao diện */
+        .qr-color-picker {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .qr-color-input {
+            width: 100px;
+            /* Giới hạn chiều rộng input */
+            height: 40px;
+            /* Chiều cao hài hòa */
+            padding: 5px;
+            cursor: pointer;
+        }
+
+        #color-display {
+            transition: background-color 0.3s ease-in-out;
+            /* Hiệu ứng mượt */
+        }
+
         @media (min-width: 640px) {
             .qr-item button {
                 width: auto;
@@ -146,13 +166,15 @@
                         http:// hoặc https://)</small>
                 </div>
 
-                <div class="mb-4">
-                    <label for="qr-color" class="block font-medium mb-2">Chọn màu mã QR</label>
-                    <input type="color" id="qr-color" value="#000000" class="w-full p-3 border rounded-md">
-                    <div id="color-display" class="w-16 h-5 border rounded-md mt-2" style="background-color: #000000;"></div>
+                <div class="qr-color-picker mb-4">
+                    <label for="qr-color" class="block font-medium mb-2 text-gray-700">Chọn màu mã QR</label>
+                    <div class="flex items-center gap-4">
+                        <input type="color" id="qr-color" value="#000000"
+                            class="qr-color-input p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <!-- <div id="color-display" class="w-16 h-8 border rounded-md" style="background-color: #000000;">
+                        </div> -->
+                    </div>
                 </div>
-
-               
 
                 <button onclick="generateAndSaveQRCode()"
                     class="w-full sm:w-auto bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
@@ -233,24 +255,24 @@
             name = '',
             color = '#000000',
             size = 400,
-            logoSize = 60, // Kích thước mặc định cho logo khi tải xuống
+            logoSize = 60,
             padding = 5,
             dpi = 4,
             includeText = true,
             logoUrl = './image/Logo.ico',
-            isListItem = false // Thêm tham số để xác định nếu đang tạo cho danh sách
+            isListItem = false
         } = {}) {
             try {
                 if (!content) {
                     throw new Error('Content is required for QR code generation');
                 }
 
-                // Điều chỉnh kích thước logo dựa vào context
-                const adjustedLogoSize = isListItem ? size * 0.15 : logoSize; // Logo size 15% của QR code cho items trong danh sách
+                const adjustedLogoSize = isListItem ? size * 0.15 : logoSize;
 
+                // Tạo QR code với padding nhỏ hơn
                 const qrDataUrl = await QRCode.toDataURL(content, {
                     width: size,
-                    margin: padding,
+                    margin: 1,
                     color: {
                         dark: color,
                         light: '#ffffff'
@@ -259,19 +281,25 @@
 
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
+
+                // Điều chỉnh kích thước canvas và khoảng cách text
+                const textHeight = includeText ? 10 : 0; // Tăng chiều cao phần text
+                const textSpacing = 15; // Thêm khoảng cách giữa QR và text
                 const canvasSize = size + (padding * 2);
-                const textSpace = includeText ? 60 : 0;
 
                 canvas.width = canvasSize * dpi;
-                canvas.height = (canvasSize + textSpace) * dpi;
+                canvas.height = (canvasSize + textHeight + textSpacing) * dpi;
                 ctx.scale(dpi, dpi);
 
+                // Vẽ background
                 ctx.fillStyle = '#ffffff';
-                ctx.fillRect(0, 0, canvas.width / dpi, canvas.height / dpi);
+                ctx.fillRect(0, 0, canvasSize, canvasSize + textHeight + textSpacing);
 
+                // Vẽ QR code
                 const qrImage = await loadImage(qrDataUrl);
                 ctx.drawImage(qrImage, padding, padding, size, size);
 
+                // Vẽ logo nếu có
                 if (logoUrl) {
                     const logoImage = await loadImage(logoUrl);
                     const logoX = (size - adjustedLogoSize) / 2 + padding;
@@ -279,11 +307,13 @@
                     ctx.drawImage(logoImage, logoX, logoY, adjustedLogoSize, adjustedLogoSize);
                 }
 
+                // Vẽ text với khoảng cách đã điều chỉnh
                 if (includeText) {
-                    ctx.font = '20px Arial';
+                    ctx.font = 'bold 20px Arial';
                     ctx.fillStyle = '#d32f2f';
                     ctx.textAlign = 'center';
-                    ctx.fillText('BDU-CM', canvasSize / 2, canvasSize + 5);
+                    // Điều chỉnh vị trí text, thêm textSpacing để tạo khoảng cách
+                    ctx.fillText('BDU-CM', canvasSize / 2, canvasSize + textSpacing);
                 }
 
                 return {
@@ -313,7 +343,7 @@
             const color = document.getElementById("qr-color").value;
 
             if (!name || !content || !currentUser) {
-                alert("Please enter all required information or log in again!");
+                alert("Vui lòng nhập đầy đủ thông tin được yêu cầu hoặc đăng nhập lại!");
                 return;
             }
 
@@ -336,11 +366,11 @@
                 });
 
                 resetForm();
-                alert("QR code created successfully!");
+                alert("Mã QR được tạo thành công!");
                 await loadQRCodes(currentUser.uid);
             } catch (error) {
                 console.error("Error creating QR code:", error);
-                alert("An error occurred while creating the QR code!");
+                alert("Đã xảy ra lỗi khi tạo mã QR!");
             }
         }
 
@@ -367,7 +397,7 @@
                         await renderQRCodeItem(qr, qrList);
                     }
                 } else {
-                    qrList.innerHTML = "<p class='text-center text-gray-500'>No QR codes created yet.</p>";
+                    qrList.innerHTML = "<p class='text-center text-gray-500'>Chưa có mã QR nào được tạo.</p>";
                 }
             });
         }
@@ -452,6 +482,7 @@
                     content: qr.redirectURL,
                     name: qr.name,
                     color: qr.color,
+                    margin: 0,
                     isListItem: false // Sử dụng kích thước logo mặc định cho bản tải xuống
                 });
 
@@ -461,7 +492,7 @@
                 link.click();
             } catch (error) {
                 console.error("Error downloading QR code:", error);
-                alert("An error occurred while downloading the QR code!");
+                alert("Đã xảy ra lỗi khi tải xuống mã QR!");
             }
         }
 
@@ -526,27 +557,27 @@
                     updatedAt: new Date().toISOString()
                 });
 
-                alert("QR code updated successfully!");
+                alert("Mã QR được cập nhật thành công!");
                 closeEditModal();
             } catch (error) {
                 console.error("Error updating QR code:", error);
-                alert("An error occurred while updating the QR code!");
+                alert("Đã xảy ra lỗi khi cập nhật mã QR!");
             }
         }
 
         // Delete QR Code
         async function deleteQRCode(key) {
-            if (!confirm("Are you sure you want to delete this QR code?")) {
+            if (!confirm("Bạn có chắc chắn muốn xóa mã QR này không?")) {
                 return;
             }
 
             try {
                 await set(ref(database, `qrCodes/${key}`), null);
-                alert("QR code deleted successfully!");
+                alert("Đã xóa mã QR thành công!");
                 await loadQRCodes(currentUser.uid);
             } catch (error) {
                 console.error("Error deleting QR code:", error);
-                alert("An error occurred while deleting the QR code.");
+                alert("Đã xảy ra lỗi khi xóa mã QR.");
             }
         }
 
@@ -591,13 +622,15 @@
         });
 
         // Lắng nghe sự kiện khi người dùng thay đổi màu sắc
-        document.getElementById('qr-color').addEventListener('input', function(event) {
+        document.getElementById('qr-color').addEventListener('input', function (event) {
             // Lấy giá trị màu sắc đã chọn từ input màu
             const selectedColor = event.target.value;
 
             // Cập nhật màu nền của ô hiển thị màu
             document.getElementById('color-display').style.backgroundColor = selectedColor;
         });
+
+       
         // Export functions for global access
         window.generateAndSaveQRCode = createAndSaveQRCode;
         window.validateURL = validateURL;
