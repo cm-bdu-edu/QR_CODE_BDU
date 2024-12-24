@@ -1,0 +1,48 @@
+body {
+    font-family: 'Roboto', sans-serif;
+}
+
+.qr-item {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    background-color: #f9fafb;
+}
+
+.qr-item img {
+    max-width: 100px;
+    margin: 0 auto 1rem;
+}
+
+#color-display {
+    transition: background-color 0.3s ease-in-out;
+    /* Hiệu ứng mượt */
+}
+
+.qr-item button:hover {
+    background-color: #19dcff;
+}
+
+#qr-traffic-list {
+    scrollbar-width: thin;
+    /* Hỗ trợ Firefox */
+    scrollbar-color: #d1d5db #f3f4f6;
+    /* Màu thanh cuộn */
+}
+
+@media (min-width: 640px) {
+    .qr-item img {
+        margin: 0 1rem 0 0;
+    }
+}
+
+@media (min-width: 640px) {
+    .qr-item {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+}
