@@ -604,7 +604,7 @@
             if (user) {
                 currentUser = user;
                 const username = user.email.split('@')[0];
-                document.getElementById("user-name").textContent = `Hello, ${username}`;
+                document.getElementById("user-name").textContent = `Xin chào, ${username}`;
                 loadQRCodes(user.uid);
             } else {
                 window.location.href = "login.html";
