@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" href="./image/Logo.ico" type="image/x-icon">
     <title>Đang tải trang...</title>
-    <script type="module">
+    <!-- <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
         import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
 
@@ -48,7 +48,7 @@
                 alert("Có lỗi xảy ra khi truy cập nội dung QR Code.");
             }
         };
-    </script>
+    </script> -->
 </head>
 
 <body>
@@ -81,6 +81,62 @@
             }
         }
     </style>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+        import { getDatabase, ref, get, push } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDnkxcPxH3Gw0l-BNro17KKX2AEV_6bsaE",
+            authDomain: "qr-code-65808.firebaseapp.com",
+            databaseURL: "https://qr-code-65808-default-rtdb.firebaseio.com",
+            projectId: "qr-code-65808",
+            storageBucket: "qr-code-65808.firebasestorage.app",
+            messagingSenderId: "953231243938",
+            appId: "1:953231243938:web:318fde18c08154e01df5fb",
+            measurementId: "G-FMV89YRW06",
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        window.onload = async function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const qrId = urlParams.get("id");
+
+            if (!qrId) {
+                alert("Không tìm thấy mã QR hợp lệ!");
+                return;
+            }
+
+            try {
+                const qrCodeRef = ref(database, `qrCodes/${qrId}`);
+                const snapshot = await get(qrCodeRef);
+
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+
+                    // Ghi nhận lượt truy cập
+                    const accessLogsRef = ref(database, `qrCodes/${qrId}/accessLogs`);
+                    const logData = {
+                        timestamp: new Date().toISOString(),
+                        userAgent: navigator.userAgent,
+                        referrer: document.referrer || "Direct Access",
+                    };
+                    await push(accessLogsRef, logData);
+
+                    // Chuyển hướng
+                    window.location.href = data.content;
+                } else {
+                    alert("Không tìm thấy nội dung QR Code!");
+                }
+            } catch (error) {
+                console.error("Error fetching QR Code content:", error);
+                alert("Có lỗi xảy ra khi truy cập nội dung QR Code.");
+            }
+        };
+    </script>
+
 </body>
 
 </html>
