@@ -52,14 +52,17 @@
                     <input type="text" id="qr-name" placeholder="Tên mã QR (VD: QR Sự kiện)"
                         class="w-full p-3 border rounded-md">
                 </div>
+
                 <div class="mb-4">
                     <label for="qr-content" class="block font-medium mb-2">Nội dung <i>(đường dẫn liên kết)</i></label>
-                    <input type="url" id="qr-content" class="w-full p-3 border rounded-md" pattern="https?://.+"
-                        placeholder="https:// hoặc http://" required oninput="validateURL(this)">
-                    <small id="url-error" class="text-red-500 hidden">Vui lòng nhập đúng định dạng URL (bắt đầu bằng
-                        http:// hoặc https://)</small>
+                    <input type="url" id="qr-content" class="w-full p-3 border rounded-md" 
+                           pattern="https?://.+" maxlength="2048" 
+                           placeholder="https:// hoặc http://" required oninput="validateURL(this)">
+                    <small id="url-error" class="text-red-500 hidden">
+                        Vui lòng nhập đúng định dạng URL (bắt đầu bằng http:// hoặc https://)
+                    </small>
                 </div>
-
+                
                 <div class="qr-color-picker mb-4">
                     <label for="qr-color" class="block font-medium mb-2 text-gray-700">Chọn màu mã QR</label>
                     <div class="flex items-center gap-4">

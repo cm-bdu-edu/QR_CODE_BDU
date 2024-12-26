@@ -327,14 +327,6 @@ function createQRCodeActions(qr) {
 }
 
 
-function createButton(text, className, onClick) {
-    const button = document.createElement("button");
-    button.className = `${className} hover:${className.replace('500', '600')} text-white px-4 py-2 rounded`;
-    button.textContent = text;
-    button.onclick = onClick;
-    return button;
-}
-
 // Tải mã QR
 async function downloadQRCode(qr) {
     try {
@@ -356,29 +348,44 @@ async function downloadQRCode(qr) {
     }
 }
 
-// URL Validation
+// kiểm tra URL
 function validateURL(input) {
-    const urlPattern = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/;
+    const urlPattern = /^(https?:\/\/)[\w.-]+(\.[\w.-]+)+([/?#].*)?$/;
+    const maxLength = 2048; // Giới hạn độ dài URL
     const errorElement = input.id === 'qr-content' ?
         document.getElementById('url-error') :
         document.getElementById('url-error-edit');
 
+    // Kiểm tra nếu URL quá dài
+    if (input.value.length > maxLength) {
+        input.setCustomValidity(`URL quá dài (tối đa ${maxLength} ký tự)`);
+        errorElement.textContent = `URL quá dài (tối đa ${maxLength} ký tự)`;
+        errorElement.classList.remove('hidden');
+        return false;
+    }
+
+    // Kiểm tra nếu không bắt đầu bằng http:// hoặc https://
     if (!input.value.startsWith('http://') && !input.value.startsWith('https://')) {
-        input.setCustomValidity('URL must start with http:// or https://');
+        input.setCustomValidity('URL phải bắt đầu bằng http:// hoặc https://');
+        errorElement.textContent = 'URL phải bắt đầu bằng http:// hoặc https://';
         errorElement.classList.remove('hidden');
         return false;
     }
 
+    // Kiểm tra định dạng URL
     if (!urlPattern.test(input.value)) {
-        input.setCustomValidity('Please enter a valid URL format');
+        input.setCustomValidity('Vui lòng nhập đúng định dạng URL');
+        errorElement.textContent = 'Vui lòng nhập đúng định dạng URL';
         errorElement.classList.remove('hidden');
         return false;
     }
 
+    // URL hợp lệ
     input.setCustomValidity('');
     errorElement.classList.add('hidden');
     return true;
 }
+
 
 // Edit QR Code
 function showEditModal(key, qrName, qrContent) {
