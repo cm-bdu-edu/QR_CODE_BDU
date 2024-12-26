@@ -103,7 +103,7 @@ async function generateQRCode({
             canvas: canvas
         };
     } catch (error) {
-        console.error('Error generating QR code:', error);
+        //console.error('Error generating QR code:', error);
         throw error;
     }
 }
@@ -152,7 +152,7 @@ async function createAndSaveQRCode() {
         await loadQRCodes(currentUser.uid);
 
     } catch (error) {
-        console.error("Error creating QR code:", error);
+        //console.error("Error creating QR code:", error);
         alert("Đã xảy ra lỗi khi tạo mã QR!");
     }
 }
@@ -207,51 +207,32 @@ async function renderQRCodeItem(qr, qrList) {
         qrItem.appendChild(qrActions);
         qrList.appendChild(qrItem);
     } catch (error) {
-        console.error('Error rendering QR code:', error);
+        //console.error('Error rendering QR code:', error);
     }
 }
 
-// button cho mã QR
-// function createQRCodeActions(qr) {
-//     const qrActions = document.createElement("div");
-//     qrActions.className = "qr-actions";
-
-//     // Name
-//     const nameText = document.createElement("p");
-//     nameText.className = "font-medium text-lg mb-2 text-left";
-//     nameText.textContent = qr.name;
-//     qrActions.appendChild(nameText);
-
-//     // Date
-//     const dateText = document.createElement("p");
-//     dateText.className = "text-sm text-gray-500 mb-2";
-//     dateText.textContent = `Ngày tạo: ${new Date(qr.createdAt).toLocaleDateString()}`;
-//     qrActions.appendChild(dateText);
-
-//     // Buttons
-//     const buttonContainer = document.createElement("div");
-//     buttonContainer.className = "flex space-x-2 mt-2";
-
-//     // Download button
-//     const downloadButton = createButton("Tải xuống", "bg-blue-500", () =>
-//         downloadQRCode(qr));
-
-//     // Edit button
-//     const editButton = createButton("Chỉnh sửa", "bg-yellow-500", () =>
-//         showEditModal(qr.key, qr.name, qr.content));
-
-//     // Delete button
-//     const deleteButton = createButton("Xóa", "bg-red-500", () =>
-//         deleteQRCode(qr.key));
-
-//     buttonContainer.append(downloadButton, editButton, deleteButton);
-//     qrActions.appendChild(buttonContainer);
-
-//     return qrActions;
-// }
-
+// button cho mã QR và các thông tin
 function createQRCodeActions(qr) {
-    console.log("DỮ LIỆU NHẬN TRONG createQRCodeActions:", qr);
+    //console.log("DỮ LIỆU NHẬN TRONG createQRCodeActions:", qr);
+
+    // SVG Icons as constants
+    const ICONS = {
+        download: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>`,
+        edit: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+        </svg>`,
+        delete: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            <line x1="10" y1="11" x2="10" y2="17"/>
+            <line x1="14" y1="11" x2="14" y2="17"/>
+        </svg>`
+    };
 
     const qrActions = document.createElement("div");
     qrActions.className = "qr-actions";
@@ -270,7 +251,7 @@ function createQRCodeActions(qr) {
 
     // Tính số lượng người truy cập và thời gian truy cập lần cuối
     const accessLogs = qr.accessLogs || {};
-    const uniqueUsers = Object.keys(accessLogs).length; // Số lượng truy cập duy nhất
+    const uniqueUsers = Object.keys(accessLogs).length;
     let lastAccess = null;
 
     // Lấy thời gian truy cập lần cuối
@@ -291,28 +272,59 @@ function createQRCodeActions(qr) {
     trafficInfo.textContent = `${usersText}, ${lastAccessText}`;
     qrActions.appendChild(trafficInfo);
 
-    // Buttons (Tạo các nút nếu cần)
+    // Helper function to create button with icon
+    function createButtonWithIcon(label, bgColor, onClick, iconSvg) {
+        const button = document.createElement("button");
+        button.className = `${bgColor} text-white px-3 py-2 rounded-lg flex items-center gap-2 hover:opacity-90 transition-opacity`;
+        button.onclick = onClick;
+        
+        // Add icon using innerHTML for SVG
+        const iconSpan = document.createElement("span");
+        iconSpan.className = "icon";
+        iconSpan.innerHTML = iconSvg;
+        
+        // Add label
+        const textSpan = document.createElement("span");
+        textSpan.textContent = label;
+        
+        button.appendChild(iconSpan);
+        button.appendChild(textSpan);
+        return button;
+    }
+
+    // Buttons container
     const buttonContainer = document.createElement("div");
     buttonContainer.className = "flex space-x-2 mt-2";
 
-    // Download button
-    const downloadButton = createButton("Tải xuống", "bg-blue-500", () =>
-        downloadQRCode(qr));
+    // Download button with icon
+    const downloadButton = createButtonWithIcon(
+        "Tải xuống",
+        "bg-blue-500",
+        () => downloadQRCode(qr),
+        ICONS.download
+    );
 
-    // Edit button
-    const editButton = createButton("Chỉnh sửa", "bg-yellow-500", () =>
-        showEditModal(qr.key, qr.name, qr.content));
+    // Edit button with icon
+    const editButton = createButtonWithIcon(
+        "Chỉnh sửa",
+        "bg-yellow-500",
+        () => showEditModal(qr.key, qr.name, qr.content),
+        ICONS.edit
+    );
 
-    // Delete button
-    const deleteButton = createButton("Xóa", "bg-red-500", () =>
-        deleteQRCode(qr.key));
+    // Delete button with icon
+    const deleteButton = createButtonWithIcon(
+        "Xóa",
+        "bg-red-500",
+        () => deleteQRCode(qr.key),
+        ICONS.delete
+    );
 
     buttonContainer.append(downloadButton, editButton, deleteButton);
     qrActions.appendChild(buttonContainer);
 
     return qrActions;
 }
-
 
 
 function createButton(text, className, onClick) {
@@ -339,7 +351,7 @@ async function downloadQRCode(qr) {
         link.download = `${qr.name}.png`;
         link.click();
     } catch (error) {
-        console.error("Error downloading QR code:", error);
+        //console.error("Error downloading QR code:", error);
         alert("Đã xảy ra lỗi khi tải xuống mã QR!");
     }
 }
@@ -408,7 +420,7 @@ async function saveQRCodeEdit() {
         alert("Mã QR được cập nhật thành công!");
         closeEditModal();
     } catch (error) {
-        console.error("Error updating QR code:", error);
+        //console.error("Error updating QR code:", error);
         alert("Đã xảy ra lỗi khi cập nhật mã QR!");
     }
 }
@@ -425,7 +437,7 @@ async function deleteQRCode(key) {
         await loadQRCodes(currentUser.uid);
 
     } catch (error) {
-        console.error("Error deleting QR code:", error);
+        //console.error("Error deleting QR code:", error);
         alert("Đã xảy ra lỗi khi xóa mã QR.");
     }
 }
@@ -482,14 +494,6 @@ document.getElementById('qr-color').addEventListener('input', function (event) {
 });
 
 
-
-// Gọi hàm loadTrafficData khi tải trang
-// onAuthStateChanged(auth, (user) => {
-//     if (user) {
-//         loadTrafficData(user.uid);
-//         loadQRCodes(user.uid);
-//     }
-// });
 
 // Export functions for global access
 window.generateAndSaveQRCode = createAndSaveQRCode;
