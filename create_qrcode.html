@@ -18,7 +18,7 @@
     <header class="bg-blue-600 text-white p-4">
         <div class="container mx-auto flex flex-wrap items-center justify-between">
             <div class="flex items-center gap-x-3 w-full sm:w-auto justify-center sm:justify-start">
-                <img src="./image/appLogoIcon.png" alt="Logo" class="h-10 w-auto mr-3" loading="lazy">
+                <img src="./image/appLogoIcon.png" alt="Logo" class="h-10 w-auto mr-3">
                 <h1 class="text-xl sm:text-2xl font-bold whitespace-nowrap">Trình tạo mã QR</h1>
             </div>
             <div id="user-info"
@@ -65,7 +65,7 @@
                     <div class="flex items-center gap-4">
                         <input type="color" id="qr-color" value="#000000"
                             class="qr-color-input p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                            <div id="color-display" class="w-16 h-7 border rounded-md" style="background-color: #000000;">
+                        <div id="color-display" class="w-16 h-7 border rounded-md" style="background-color: #000000;">
                         </div>
                     </div>
                 </div>
@@ -77,34 +77,36 @@
 
             </div>
 
-             <!-- Modal for Editing QR -->
-        <div id="edit-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-            <div class="bg-white p-4 sm:p-6 rounded-md shadow-md w-full max-w-md">
-                <h2 class="text-lg font-semibold mb-4">Chỉnh sửa Mã QR</h2>
-                <div class="mb-4">
-                    <label for="edit-qr-name" class="block font-medium mb-2">Tên gợi nhớ</label>
-                    <input type="text" id="edit-qr-name" class="w-full p-3 border rounded-md">
-                </div>
-                <div class="mb-4">
-                    <label for="edit-qr-content" class="block font-medium mb-2">Nội dung <i>(đường dẫn liên
-                            kết)</i></label>
-                    <input type="url" id="edit-qr-content" class="w-full p-3 border rounded-md" pattern="https?://.+"
-                        placeholder="https:// hoặc http://" required oninput="validateURL(this)">
-                    <small id="url-error-edit" class="text-red-500 hidden">Vui lòng nhập đúng định dạng URL (bắt đầu
-                        bằng http:// hoặc https://)</small>
-                </div>
-                <div class="flex flex-col sm:flex-row justify-end gap-2">
-                    <button onclick="saveQRCodeEdit()"
-                        class="w-full sm:w-auto bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600">
-                        Lưu
-                    </button>
-                    <button onclick="closeEditModal()"
-                        class="w-full sm:w-auto bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600">
-                        Hủy
-                    </button>
+            <!-- Modal for Editing QR -->
+            <div id="edit-modal"
+                class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+                <div class="bg-white p-4 sm:p-6 rounded-md shadow-md w-full max-w-md">
+                    <h2 class="text-lg font-semibold mb-4">Chỉnh sửa Mã QR</h2>
+                    <div class="mb-4">
+                        <label for="edit-qr-name" class="block font-medium mb-2">Tên gợi nhớ</label>
+                        <input type="text" id="edit-qr-name" class="w-full p-3 border rounded-md">
+                    </div>
+                    <div class="mb-4">
+                        <label for="edit-qr-content" class="block font-medium mb-2">Nội dung <i>(đường dẫn liên
+                                kết)</i></label>
+                        <input type="url" id="edit-qr-content" class="w-full p-3 border rounded-md"
+                            pattern="https?://.+" placeholder="https:// hoặc http://" required
+                            oninput="validateURL(this)">
+                        <small id="url-error-edit" class="text-red-500 hidden">Vui lòng nhập đúng định dạng URL (bắt đầu
+                            bằng http:// hoặc https://)</small>
+                    </div>
+                    <div class="flex flex-col sm:flex-row justify-end gap-2">
+                        <button onclick="saveQRCodeEdit()"
+                            class="w-full sm:w-auto bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600">
+                            Lưu
+                        </button>
+                        <button onclick="closeEditModal()"
+                            class="w-full sm:w-auto bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600">
+                            Hủy
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
         </div>
     </main>
 
