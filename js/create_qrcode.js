@@ -34,68 +34,142 @@ let qrCodesListener = null;
 // tạo mã QR
 async function generateQRCode({
     content,
-    name = '',
-    color = '#000000',
+    color = '#1a365d', // Màu QR code tối và chuyên nghiệp
     size = 400,
     logoSize = 60,
     padding = 5,
     dpi = 4,
     includeText = true,
     logoUrl = './image/Logo.ico',
-    isListItem = false
+    isListItem = false,
+    cornerRadius = 20,
+    // Thêm các tùy chọn màu mới
+    backgroundColor = '#ffffff', // Nền trắng làm nổi bật QR
+
+    gradientStart = '#2563eb',  // Màu gradient bắt đầu
+    gradientEnd = '#1e40af'     // Màu gradient kết thúc
 } = {}) {
     try {
         if (!content) {
             throw new Error('Content is required for QR code generation');
         }
 
+        
         const adjustedLogoSize = isListItem ? size * 0.15 : logoSize;
 
-        // Tạo QR code với padding nhỏ hơn
         const qrDataUrl = await QRCode.toDataURL(content, {
             width: size,
             margin: 1,
             color: {
                 dark: color,
-                light: '#ffffff'
+                light: backgroundColor
             }
         });
 
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
 
-        // Điều chỉnh kích thước canvas và khoảng cách text
-        const textHeight = includeText ? 10 : 0; // Tăng chiều cao phần text
-        const textSpacing = 15; // Thêm khoảng cách giữa QR và text
+        const textHeight = includeText ? 30 : 0; // Tăng chiều cao text
+        const textSpacing = 20;
         const canvasSize = size + (padding * 2);
 
         canvas.width = canvasSize * dpi;
         canvas.height = (canvasSize + textHeight + textSpacing) * dpi;
         ctx.scale(dpi, dpi);
 
-        // Vẽ background
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, canvasSize, canvasSize + textHeight + textSpacing);
+        // Tạo gradient cho background
+        const gradient = ctx.createLinearGradient(0, 0, canvasSize, canvasSize + textHeight + textSpacing);
+        gradient.addColorStop(0, gradientStart);
+        gradient.addColorStop(1, gradientEnd);
+        
+        // Vẽ background với gradient
+        ctx.fillStyle = gradient;
+        drawRoundedRect(ctx, 0, 0, canvasSize, canvasSize + textHeight + textSpacing, cornerRadius);
+        ctx.fill();
 
-        // Vẽ QR code
+        // Vẽ nền trắng cho QR code
+        ctx.fillStyle = backgroundColor;
+        drawRoundedRect(ctx, padding, padding, size, size, cornerRadius - 5);
+        ctx.fill();
+
+        // Tạo canvas tạm thời cho QR code
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCanvas.width = size;
+        tempCanvas.height = size;
+
         const qrImage = await loadImage(qrDataUrl);
-        ctx.drawImage(qrImage, padding, padding, size, size);
+        tempCtx.save();
+        
+        tempCtx.beginPath();
+        tempCtx.moveTo(cornerRadius, 0);
+        tempCtx.lineTo(size - cornerRadius, 0);
+        tempCtx.quadraticCurveTo(size, 0, size, cornerRadius);
+        tempCtx.lineTo(size, size - cornerRadius);
+        tempCtx.quadraticCurveTo(size, size, size - cornerRadius, size);
+        tempCtx.lineTo(cornerRadius, size);
+        tempCtx.quadraticCurveTo(0, size, 0, size - cornerRadius);
+        tempCtx.lineTo(0, cornerRadius);
+        tempCtx.quadraticCurveTo(0, 0, cornerRadius, 0);
+        tempCtx.closePath();
+        
+        tempCtx.clip();
+        tempCtx.drawImage(qrImage, 0, 0, size, size);
+        tempCtx.restore();
 
-        // Vẽ logo nếu có
+        ctx.drawImage(tempCanvas, padding, padding, size, size);
+
+        // Vẽ logo với đổ bóng
         if (logoUrl) {
             const logoImage = await loadImage(logoUrl);
             const logoX = (size - adjustedLogoSize) / 2 + padding;
             const logoY = (size - adjustedLogoSize) / 2 + padding;
-            ctx.drawImage(logoImage, logoX, logoY, adjustedLogoSize, adjustedLogoSize);
+            
+            // Thêm đổ bóng
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+            ctx.shadowBlur = 10;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 2;
+            
+            const logoCanvas = document.createElement('canvas');
+            const logoCtx = logoCanvas.getContext('2d');
+            logoCanvas.width = adjustedLogoSize;
+            logoCanvas.height = adjustedLogoSize;
+            
+            logoCtx.beginPath();
+            logoCtx.arc(adjustedLogoSize/2, adjustedLogoSize/2, adjustedLogoSize/2, 0, Math.PI * 2);
+            logoCtx.closePath();
+            logoCtx.clip();
+            
+            logoCtx.drawImage(logoImage, 0, 0, adjustedLogoSize, adjustedLogoSize);
+            
+            // Vẽ viền trắng xung quanh logo
+            ctx.beginPath();
+            ctx.arc(logoX + adjustedLogoSize/2, logoY + adjustedLogoSize/2, 
+                   (adjustedLogoSize/2) + 5, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+            
+            ctx.drawImage(logoCanvas, logoX, logoY);
+            
+            // Reset shadow
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
         }
 
-        // Vẽ text với khoảng cách đã điều chỉnh
+        // Vẽ text với style mới
         if (includeText) {
-            ctx.font = 'bold 20px Arial';
-            ctx.fillStyle = '#d32f2f';
+            ctx.font = 'bold 24px Arial'; // Tăng kích thước font
+            ctx.fillStyle = '#ffffff';    // Màu trắng cho text
             ctx.textAlign = 'center';
-            // Điều chỉnh vị trí text, thêm textSpacing để tạo khoảng cách
-            ctx.fillText('BDU-CM', canvasSize / 2, canvasSize + textSpacing);
+            // Thêm đổ bóng cho text
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+            ctx.shadowBlur = 4;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 2;
+            ctx.fillText('BDU-CM', canvasSize / 2, canvasSize + textSpacing + 10);
         }
 
         return {
@@ -103,9 +177,23 @@ async function generateQRCode({
             canvas: canvas
         };
     } catch (error) {
-        //console.error('Error generating QR code:', error);
         throw error;
     }
+}
+
+// Hàm vẽ hình chữ nhật với góc bo tròn (giữ nguyên)
+function drawRoundedRect(ctx, x, y, width, height, radius) {
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + width - radius, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+    ctx.lineTo(x + width, y + height - radius);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    ctx.lineTo(x + radius, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.closePath();
 }
 
 // tải hình ảnh
