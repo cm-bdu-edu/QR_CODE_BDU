@@ -98,50 +98,49 @@
 
     let isLogin = true;
 
-    // Chuyển đổi giữa đăng nhập và đăng ký
-    toggleAuth.addEventListener("click", () => {
-      isLogin = !isLogin;
-      authTitle.textContent = isLogin ? "Đăng Nhập" : "Đăng Ký";
-      authAction.textContent = isLogin ? "Đăng Nhập" : "Đăng Ký";
-      toggleAuth.textContent = isLogin
-        ? "Chưa có tài khoản? Đăng ký ngay"
-        : "Đã có tài khoản? Đăng nhập ngay";
+    // Theo dõi trạng thái xác thực của người dùng
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // Nếu email đã được xác thực, chuyển hướng đến trang create_qrcode.html
+        if (user.emailVerified) {
+          window.location.href = "create_qrcode.html";
+        }
+      }
     });
 
-    // Xử lý đăng nhập và đăng ký
-    authAction.addEventListener("click", async () => {
-      const email = emailInput.value.trim();
-      const password = passwordInput.value.trim();
+  
 
-      // Kiểm tra email có đuôi "bdu.edu.vn"
-      if (!email.endsWith("@bdu.edu.vn")) {
-        showErrorMessage("Chỉ chấp nhận email từ miền bdu.edu.vn.");
-        return;
-      }
-
-      if (!email || !password) {
-        showErrorMessage("Vui lòng nhập email và mật khẩu");
-        return;
-      }
-
-      try {
-        if (isLogin) {
+          // Xử lý đăng nhập
           const userCredential = await signInWithEmailAndPassword(auth, email, password);
           const user = userCredential.user;
 
-          // Kiểm tra nếu email chưa được xác minh
           if (!user.emailVerified) {
             showErrorMessage("Email chưa được xác minh. Vui lòng kiểm tra hộp thư của bạn.");
+            // Gửi lại email xác minh nếu cần
+            await sendEmailVerification(user);
             return;
           }
           window.location.href = "create_qrcode.html";
         } else {
+
+
           const userCredential = await createUserWithEmailAndPassword(auth, email, password);
           const user = userCredential.user;
 
           // Gửi email xác minh
           await sendEmailVerification(user);
-          alert("Một email xác minh đã được gửi. Vui lòng kiểm tra hộp thư của bạn.");
+
+
+          // Đăng xuất người dùng ngay sau khi đăng ký để họ phải xác minh email trước
+          await auth.signOut();
+
+          showMessage("Một email xác minh đã được gửi. Vui lòng xác minh email của bạn trước khi đăng nhập.");
+
+          // Chuyển về form đăng nhập
+          isLogin = true;
+          authTitle.textContent = "Đăng Nhập";
+          authAction.textContent = "Đăng Nhập";
+          toggleAuth.textContent = "Chưa có tài khoản? Đăng ký ngay";
         }
       } catch (error) {
         showErrorMessage(error.message);
@@ -154,8 +153,15 @@
       errorMessage.classList.remove("hidden");
     };
 
+    const showMessage = (message) => {
+      errorMessage.textContent = message;
+      errorMessage.classList.remove("hidden");
+      errorMessage.style.color = "#4CAF50"; // Màu xanh cho thông báo thành công
+    };
+
     const clearErrorMessage = () => {
       errorMessage.classList.add("hidden");
+      errorMessage.style.color = ""; // Reset màu
     };
 
     // Xử lý quên mật khẩu
@@ -172,7 +178,6 @@
     resetAction.addEventListener("click", async () => {
       const email = resetEmailInput.value.trim();
 
-      // Kiểm tra email có đuôi "bdu.edu.vn"
       if (!email.endsWith("@bdu.edu.vn")) {
         resetErrorMessage.textContent = "Chỉ chấp nhận email từ miền bdu.edu.vn.";
         resetErrorMessage.classList.remove("hidden");
@@ -187,7 +192,7 @@
 
       try {
         await sendPasswordResetEmail(auth, email);
-        alert("Liên kết đặt lại mật khẩu đã được gửi đến email của bạn.");
+        showMessage("Liên kết đặt lại mật khẩu đã được gửi đến email của bạn.");
         resetContainer.classList.add("hidden");
         authContainer.classList.remove("hidden");
       } catch (error) {
@@ -195,6 +200,20 @@
         resetErrorMessage.classList.remove("hidden");
       }
     });
+
+
+    // Vô hiệu hóa chuột phải
+    document.addEventListener('contextmenu', function (e) {
+      e.preventDefault();
+    });
+
+    // Vô hiệu hóa phím F12 và DevTools
+    document.addEventListener('keydown', function (e) {
+      if (e.key === "F12" || (e.ctrlKey && e.shiftKey && e.key === "I")) {
+        e.preventDefault();
+      }
+    });
+
   </script>
 
 </body>
