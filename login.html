@@ -108,34 +108,8 @@
       }
     });
 
-    // Chuyển đổi giữa đăng nhập và đăng ký
-    toggleAuth.addEventListener("click", () => {
-      isLogin = !isLogin;
-      authTitle.textContent = isLogin ? "Đăng Nhập" : "Đăng Ký";
-      authAction.textContent = isLogin ? "Đăng Nhập" : "Đăng Ký";
-      toggleAuth.textContent = isLogin
-        ? "Chưa có tài khoản? Đăng ký ngay"
-        : "Đã có tài khoản? Đăng nhập ngay";
-    });
+  
 
-    // Xử lý đăng nhập và đăng ký
-    authAction.addEventListener("click", async () => {
-      const email = emailInput.value.trim();
-      const password = passwordInput.value.trim();
-
-      // Kiểm tra email có đuôi "bdu.edu.vn"
-      if (!email.endsWith("@bdu.edu.vn")) {
-        showErrorMessage("Chỉ chấp nhận email từ miền bdu.edu.vn.");
-        return;
-      }
-
-      if (!email || !password) {
-        showErrorMessage("Vui lòng nhập email và mật khẩu");
-        return;
-      }
-
-      try {
-        if (isLogin) {
           // Xử lý đăng nhập
           const userCredential = await signInWithEmailAndPassword(auth, email, password);
           const user = userCredential.user;
@@ -148,12 +122,14 @@
           }
           window.location.href = "create_qrcode.html";
         } else {
-          // Xử lý đăng ký
+
+
           const userCredential = await createUserWithEmailAndPassword(auth, email, password);
           const user = userCredential.user;
 
           // Gửi email xác minh
           await sendEmailVerification(user);
+
 
           // Đăng xuất người dùng ngay sau khi đăng ký để họ phải xác minh email trước
           await auth.signOut();
@@ -225,6 +201,7 @@
       }
     });
 
+
     // Vô hiệu hóa chuột phải
     document.addEventListener('contextmenu', function (e) {
       e.preventDefault();
@@ -236,6 +213,7 @@
         e.preventDefault();
       }
     });
+
   </script>
 
 </body>
