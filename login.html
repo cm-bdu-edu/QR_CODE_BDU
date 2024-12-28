@@ -61,10 +61,12 @@
       getAuth,
       createUserWithEmailAndPassword,
       signInWithEmailAndPassword,
+      sendEmailVerification,
+      sendPasswordResetEmail,
       onAuthStateChanged,
-      signOut
     } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
 
+    // Cấu hình Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyDnkxcPxH3Gw0l-BNro17KKX2AEV_6bsaE",
       authDomain: "qr-code-65808.firebaseapp.com",
@@ -73,12 +75,13 @@
       storageBucket: "qr-code-65808.firebasestorage.app",
       messagingSenderId: "953231243938",
       appId: "1:953231243938:web:318fde18c08154e01df5fb",
-      measurementId: "G-FMV89YRW06"
+      measurementId: "G-FMV89YRW06",
     };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
+    // DOM Elements
     const authContainer = document.getElementById("auth-container");
     const authTitle = document.getElementById("auth-title");
     const authAction = document.getElementById("auth-action");
@@ -86,9 +89,26 @@
     const errorMessage = document.getElementById("error-message");
     const emailInput = document.getElementById("email");
     const passwordInput = document.getElementById("password");
+    const forgotPasswordLink = document.getElementById("forgot-password");
+    const resetContainer = document.getElementById("reset-container");
+    const resetEmailInput = document.getElementById("reset-email");
+    const resetAction = document.getElementById("reset-action");
+    const resetErrorMessage = document.getElementById("reset-error-message");
+    const backToLogin = document.getElementById("back-to-login");
 
     let isLogin = true;
 
+    // Theo dõi trạng thái xác thực của người dùng
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // Nếu email đã được xác thực, chuyển hướng đến trang create_qrcode.html
+        if (user.emailVerified) {
+          window.location.href = "create_qrcode.html";
+        }
+      }
+    });
+
+    // Chuyển đổi giữa đăng nhập và đăng ký
     toggleAuth.addEventListener("click", () => {
       isLogin = !isLogin;
       authTitle.textContent = isLogin ? "Đăng Nhập" : "Đăng Ký";
@@ -98,9 +118,17 @@
         : "Đã có tài khoản? Đăng nhập ngay";
     });
 
+    // Xử lý đăng nhập và đăng ký
     authAction.addEventListener("click", async () => {
       const email = emailInput.value.trim();
       const password = passwordInput.value.trim();
+
+      // Kiểm tra email có đuôi "bdu.edu.vn"
+      if (!email.endsWith("@bdu.edu.vn")) {
+        showErrorMessage("Chỉ chấp nhận email từ miền bdu.edu.vn.");
+        return;
+      }
+
       if (!email || !password) {
         showErrorMessage("Vui lòng nhập email và mật khẩu");
         return;
@@ -108,52 +136,78 @@
 
       try {
         if (isLogin) {
-          await signInWithEmailAndPassword(auth, email, password);
+          // Xử lý đăng nhập
+          const userCredential = await signInWithEmailAndPassword(auth, email, password);
+          const user = userCredential.user;
+
+          if (!user.emailVerified) {
+            showErrorMessage("Email chưa được xác minh. Vui lòng kiểm tra hộp thư của bạn.");
+            // Gửi lại email xác minh nếu cần
+            await sendEmailVerification(user);
+            return;
+          }
+          window.location.href = "create_qrcode.html";
         } else {
-          await createUserWithEmailAndPassword(auth, email, password);
+          // Xử lý đăng ký
+          const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+          const user = userCredential.user;
+
+          // Gửi email xác minh
+          await sendEmailVerification(user);
+
+          // Đăng xuất người dùng ngay sau khi đăng ký để họ phải xác minh email trước
+          await auth.signOut();
+
+          showMessage("Một email xác minh đã được gửi. Vui lòng xác minh email của bạn trước khi đăng nhập.");
+
+          // Chuyển về form đăng nhập
+          isLogin = true;
+          authTitle.textContent = "Đăng Nhập";
+          authAction.textContent = "Đăng Nhập";
+          toggleAuth.textContent = "Chưa có tài khoản? Đăng ký ngay";
         }
-        window.location.href = "create_qrcode.html";
       } catch (error) {
         showErrorMessage(error.message);
       }
     });
 
+    // Hiển thị thông báo lỗi
     const showErrorMessage = (message) => {
       errorMessage.textContent = message;
       errorMessage.classList.remove("hidden");
     };
 
-    const clearErrorMessage = () => {
-      errorMessage.classList.add("hidden");
+    const showMessage = (message) => {
+      errorMessage.textContent = message;
+      errorMessage.classList.remove("hidden");
+      errorMessage.style.color = "#4CAF50"; // Màu xanh cho thông báo thành công
     };
 
-    //logic quên mật khẩu
-    import {
-      sendPasswordResetEmail,
-    } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+    const clearErrorMessage = () => {
+      errorMessage.classList.add("hidden");
+      errorMessage.style.color = ""; // Reset màu
+    };
 
-    const forgotPasswordLink = document.getElementById("forgot-password");
-    const resetContainer = document.getElementById("reset-container");
-    const resetEmailInput = document.getElementById("reset-email");
-    const resetAction = document.getElementById("reset-action");
-    const resetErrorMessage = document.getElementById("reset-error-message");
-    const backToLogin = document.getElementById("back-to-login");
-
-    // Chuyển sang giao diện quên mật khẩu
+    // Xử lý quên mật khẩu
     forgotPasswordLink.addEventListener("click", () => {
       authContainer.classList.add("hidden");
       resetContainer.classList.remove("hidden");
     });
 
-    // Quay lại giao diện đăng nhập
     backToLogin.addEventListener("click", () => {
       resetContainer.classList.add("hidden");
       authContainer.classList.remove("hidden");
     });
 
-    // Xử lý yêu cầu đặt lại mật khẩu
     resetAction.addEventListener("click", async () => {
       const email = resetEmailInput.value.trim();
+
+      if (!email.endsWith("@bdu.edu.vn")) {
+        resetErrorMessage.textContent = "Chỉ chấp nhận email từ miền bdu.edu.vn.";
+        resetErrorMessage.classList.remove("hidden");
+        return;
+      }
+
       if (!email) {
         resetErrorMessage.textContent = "Vui lòng nhập email.";
         resetErrorMessage.classList.remove("hidden");
@@ -162,7 +216,7 @@
 
       try {
         await sendPasswordResetEmail(auth, email);
-        alert("Liên kết đặt lại mật khẩu đã được gửi đến email của bạn.");
+        showMessage("Liên kết đặt lại mật khẩu đã được gửi đến email của bạn.");
         resetContainer.classList.add("hidden");
         authContainer.classList.remove("hidden");
       } catch (error) {
@@ -171,7 +225,19 @@
       }
     });
 
+    // Vô hiệu hóa chuột phải
+    document.addEventListener('contextmenu', function (e) {
+      e.preventDefault();
+    });
+
+    // Vô hiệu hóa phím F12 và DevTools
+    document.addEventListener('keydown', function (e) {
+      if (e.key === "F12" || (e.ctrlKey && e.shiftKey && e.key === "I")) {
+        e.preventDefault();
+      }
+    });
   </script>
+
 </body>
 
 </html>

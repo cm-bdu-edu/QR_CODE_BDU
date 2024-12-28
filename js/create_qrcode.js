@@ -45,16 +45,16 @@ async function generateQRCode({
     cornerRadius = 20,
     // Thêm các tùy chọn màu mới
     backgroundColor = '#ffffff', // Nền trắng làm nổi bật QR
-
     gradientStart = '#2563eb',  // Màu gradient bắt đầu
-    gradientEnd = '#1e40af'     // Màu gradient kết thúc
+    gradientEnd = '#1e40af',    // Màu gradient kết thúc
+
 } = {}) {
     try {
         if (!content) {
             throw new Error('Content is required for QR code generation');
         }
 
-        
+
         const adjustedLogoSize = isListItem ? size * 0.15 : logoSize;
 
         const qrDataUrl = await QRCode.toDataURL(content, {
@@ -81,7 +81,7 @@ async function generateQRCode({
         const gradient = ctx.createLinearGradient(0, 0, canvasSize, canvasSize + textHeight + textSpacing);
         gradient.addColorStop(0, gradientStart);
         gradient.addColorStop(1, gradientEnd);
-        
+
         // Vẽ background với gradient
         ctx.fillStyle = gradient;
         drawRoundedRect(ctx, 0, 0, canvasSize, canvasSize + textHeight + textSpacing, cornerRadius);
@@ -100,7 +100,7 @@ async function generateQRCode({
 
         const qrImage = await loadImage(qrDataUrl);
         tempCtx.save();
-        
+
         tempCtx.beginPath();
         tempCtx.moveTo(cornerRadius, 0);
         tempCtx.lineTo(size - cornerRadius, 0);
@@ -112,7 +112,7 @@ async function generateQRCode({
         tempCtx.lineTo(0, cornerRadius);
         tempCtx.quadraticCurveTo(0, 0, cornerRadius, 0);
         tempCtx.closePath();
-        
+
         tempCtx.clip();
         tempCtx.drawImage(qrImage, 0, 0, size, size);
         tempCtx.restore();
@@ -124,34 +124,34 @@ async function generateQRCode({
             const logoImage = await loadImage(logoUrl);
             const logoX = (size - adjustedLogoSize) / 2 + padding;
             const logoY = (size - adjustedLogoSize) / 2 + padding;
-            
+
             // Thêm đổ bóng
             ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
             ctx.shadowBlur = 10;
             ctx.shadowOffsetX = 0;
             ctx.shadowOffsetY = 2;
-            
+
             const logoCanvas = document.createElement('canvas');
             const logoCtx = logoCanvas.getContext('2d');
             logoCanvas.width = adjustedLogoSize;
             logoCanvas.height = adjustedLogoSize;
-            
+
             logoCtx.beginPath();
-            logoCtx.arc(adjustedLogoSize/2, adjustedLogoSize/2, adjustedLogoSize/2, 0, Math.PI * 2);
+            logoCtx.arc(adjustedLogoSize / 2, adjustedLogoSize / 2, adjustedLogoSize / 2, 0, Math.PI * 2);
             logoCtx.closePath();
             logoCtx.clip();
-            
+
             logoCtx.drawImage(logoImage, 0, 0, adjustedLogoSize, adjustedLogoSize);
-            
+
             // Vẽ viền trắng xung quanh logo
             ctx.beginPath();
-            ctx.arc(logoX + adjustedLogoSize/2, logoY + adjustedLogoSize/2, 
-                   (adjustedLogoSize/2) + 5, 0, Math.PI * 2);
+            ctx.arc(logoX + adjustedLogoSize / 2, logoY + adjustedLogoSize / 2,
+                (adjustedLogoSize / 2) + 5, 0, Math.PI * 2);
             ctx.fillStyle = '#ffffff';
             ctx.fill();
-            
+
             ctx.drawImage(logoCanvas, logoX, logoY);
-            
+
             // Reset shadow
             ctx.shadowColor = 'transparent';
             ctx.shadowBlur = 0;
@@ -224,7 +224,10 @@ async function createAndSaveQRCode() {
     try {
         const qrRef = ref(database, "qrCodes");
         const newQRCodeRef = push(qrRef);
-        const redirectURL = `${window.location.origin}/QR_CODE_BDU/redirect.html?id=${newQRCodeRef.key}`;
+
+        // Xây dựng URL chuyển hướng dựa trên URL gốc và ID của mã QR
+        const redirectPath = "/redirect.html"; // Chỉ định đường dẫn chính xác của file đích
+        const redirectURL = `${window.location.origin}${redirectPath}?id=${newQRCodeRef.key}`;
 
         await set(newQRCodeRef, {
             userId: currentUser.uid,
@@ -240,7 +243,6 @@ async function createAndSaveQRCode() {
         await loadQRCodes(currentUser.uid);
 
     } catch (error) {
-        //console.error("Error creating QR code:", error);
         alert("Đã xảy ra lỗi khi tạo mã QR!");
     }
 }
@@ -367,16 +369,16 @@ function createQRCodeActions(qr) {
         const button = document.createElement("button");
         button.className = `${bgColor} text-white px-3 py-2 rounded-lg flex items-center gap-2 hover:opacity-90 transition-opacity`;
         button.onclick = onClick;
-        
+
         // thêm icon
         const iconSpan = document.createElement("span");
         iconSpan.className = "icon";
         iconSpan.innerHTML = iconSvg;
-        
+
         // thêm text
         const textSpan = document.createElement("span");
         textSpan.textContent = label;
-        
+
         button.appendChild(iconSpan);
         button.appendChild(textSpan);
         return button;
@@ -384,7 +386,10 @@ function createQRCodeActions(qr) {
 
     // hàm sao chép link
     async function copyQRLink(key) {
-        const link = `${window.location.origin}/QR_CODE_BDU/redirect.html?id=${key}`; //http://127.0.0.1:5500/QR_CODE_BDU/redirect.html?id=-OF5Dpcp0eLrFj19mu8c
+        // Định nghĩa đường dẫn đích một cách linh hoạt
+        const redirectPath = "/redirect.html"; // Đường dẫn file đích (cố định trên server)
+        const link = `${window.location.origin}${redirectPath}?id=${key}`; // Tự động ghép URL gốc với đường dẫn
+
         try {
             await navigator.clipboard.writeText(link);
             alert('Đã sao chép link thành công!');
@@ -393,6 +398,7 @@ function createQRCodeActions(qr) {
             alert('Không thể sao chép link. Vui lòng thử lại.');
         }
     }
+
 
     // Buttons container
     const buttonContainer = document.createElement("div");
@@ -611,8 +617,18 @@ document.getElementById('qr-color').addEventListener('input', function (event) {
 });
 
 
+// Vô hiệu hóa chuột phải
+document.addEventListener('contextmenu', function (e) {
+    e.preventDefault();
+});
 
-// Export functions for global access
+// Vô hiệu hóa phím F12 và DevTools
+document.addEventListener('keydown', function (e) {
+    if (e.key === "F12" || (e.ctrlKey && e.shiftKey && e.key === "I")) {
+        e.preventDefault();
+    }
+});
+// 
 window.generateAndSaveQRCode = createAndSaveQRCode;
 window.validateURL = validateURL;
 window.filterQRCodes = filterQRCodes;
