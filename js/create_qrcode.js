@@ -512,6 +512,7 @@ function showEditModal(key, qrName, qrContent) {
     editModal.classList.remove("hidden");
 }
 
+
 function closeEditModal() {
     document.getElementById("edit-modal").classList.add("hidden");
 }
@@ -524,7 +525,7 @@ async function saveQRCodeEdit() {
     const newQrContent = document.getElementById("edit-qr-content").value.trim();
 
     if (!newQrName || !newQrContent) {
-        alert("Please enter all required information!");
+        alert("Vui lòng nhập tất cả thông tin bắt buộc!");
         return;
     }
 
@@ -548,7 +549,7 @@ async function saveQRCodeEdit() {
     }
 }
 
-// Delete QR Code
+// Xóa QR Code
 async function deleteQRCode(key) {
     if (!confirm("Bạn có chắc chắn muốn xóa mã QR này không?")) {
         return;
@@ -565,7 +566,7 @@ async function deleteQRCode(key) {
     }
 }
 
-// Filter QR Codes
+// Lọc QR Codes
 function filterQRCodes() {
     const searchValue = document.getElementById("search-qr").value.toLowerCase();
     const qrItems = document.querySelectorAll("#qr-list .qr-item");
@@ -576,14 +577,14 @@ function filterQRCodes() {
     });
 }
 
-// Utility Functions
+// đặt lại form
 function resetForm() {
     document.getElementById("qr-name").value = "";
     document.getElementById("qr-content").value = "";
     document.getElementById("qr-color").value = "#000000";
 }
 
-// Authentication Management
+//đăng nhập
 onAuthStateChanged(auth, (user) => {
     if (user) {
         currentUser = user;
@@ -596,7 +597,7 @@ onAuthStateChanged(auth, (user) => {
 });
 
 
-// Event Listeners
+// lang nghe su kien dang xuat
 document.getElementById("logout-btn").addEventListener("click", async () => {
     try {
         await signOut(auth);
@@ -628,10 +629,35 @@ document.addEventListener('keydown', function (e) {
         e.preventDefault();
     }
 });
-// 
+
+// Hướng dẫn sử dụng
+document.addEventListener('DOMContentLoaded', () => {
+    if (!localStorage.getItem('firstVisit')) {
+        startIntroGuide();
+        localStorage.setItem('firstVisit', 'true');
+    }
+});
+
+function startIntroGuide() {
+    const intro = introJs();
+    intro.setOptions({
+        steps: [
+            { intro: "Chào mừng bạn đến với Trình tạo mã QR!" },
+            { element: '#qr-name', intro: "Nhập tên gợi nhớ cho mã QR tại đây." },
+            { element: '#qr-content', intro: "Nhập nội dung (URL) mà mã QR sẽ liên kết." },
+            { element: '#qr-color', intro: "Bạn có thể chọn màu sắc cho mã QR." },
+            { element: '#qr-list-container', intro: "Danh sách các mã QR đã tạo sẽ xuất hiện tại đây." }
+        ],
+        nextLabel: "Tiếp tục",
+        prevLabel: "Quay lại",
+        doneLabel: "Hoàn thành"
+    });
+    intro.start();
+}
+
+// xuất ra các hàm
 window.generateAndSaveQRCode = createAndSaveQRCode;
 window.validateURL = validateURL;
 window.filterQRCodes = filterQRCodes;
 window.closeEditModal = closeEditModal;
 window.saveQRCodeEdit = saveQRCodeEdit;
-
