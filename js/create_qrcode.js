@@ -386,8 +386,12 @@ function createQRCodeActions(qr) {
 
     // hàm sao chép link
     async function copyQRLink(key) {
+        // Lấy đường dẫn hiện tại và xác định đường dẫn gốc của dự án
+        const currentPath = window.location.pathname;
+        const projectRoot = currentPath.substring(0, currentPath.lastIndexOf('/'));
+
         // Định nghĩa đường dẫn đích một cách linh hoạt
-        const redirectPath = "/redirect.html"; // Đường dẫn file đích (cố định trên server)
+        const redirectPath = `${projectRoot}/redirect.html`; // Đường dẫn file đích (cố định trên server)
         const link = `${window.location.origin}${redirectPath}?id=${key}`; // Tự động ghép URL gốc với đường dẫn
 
         try {
