@@ -229,7 +229,7 @@ async function createAndSaveQRCode() {
         const currentPath = window.location.pathname;
         const projectRoot = currentPath.substring(0, currentPath.lastIndexOf('/'));
         const redirectPath = `${projectRoot}/redirect.html`; // Đường dẫn file đích (cố định trên server)
-        const redirectURL = `${window.location.origin}${redirectPath}?id=${newQRCodeRef.key}`;
+        const redirectURL = `${window.location.origin}${redirectPath}?id=${newQRCodeRef.key}&${content}`; // Thêm chỉ mục động
 
         await set(newQRCodeRef, {
             userId: currentUser.uid,
