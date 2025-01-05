@@ -1,0 +1,65 @@
+/* chỉnh sửa form hướng dẫn sử dụng */
+.introjs-tooltip {
+    background-color: rgba(249, 250, 251, 0.8); /* Added background color with opacity */
+    color: #1f2937;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px); /* Added blur effect */
+}
+
+/* Customize the tooltip title */
+.introjs-tooltip-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+/* Customize the tooltip text */
+.introjs-tooltiptext {
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+/* Customize the navigation buttons */
+.introjs-button {
+    background-color: #3b82f6;
+    color: #ffffff;
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    margin: 0.5rem;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease; /* Added transition for smooth effect */
+}
+
+.introjs-button:hover {
+    background-color: #faa543;
+    transform: scale(1.05); /* Added scale effect on hover */
+}
+
+.introjs-button.introjs-nextbutton {
+    background-color: #f59e0b; /* Highlight color for the Next button */
+    color: #ffffff;
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    margin: 0.5rem;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease; /* Added transition for smooth effect */
+}
+
+.introjs-button.introjs-nextbutton:hover {
+    background-color: #d97706; /* Darker shade on hover */
+    transform: scale(1.1); /* Added scale effect on hover */
+}
+
+/* Customize the highlight layer */
+.introjs-helperLayer {
+    background: rgba(59, 130, 246, 0.2);
+    border-radius: 8px;
+}
+
+/* Customize the progress bar */
+.introjs-progress {
+    background-color: #3b82f6;
+}
