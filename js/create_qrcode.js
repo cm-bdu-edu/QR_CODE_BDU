@@ -206,14 +206,30 @@ function loadImage(src) {
     });
 }
 
-// tạo và lưu mã QR
+// === QR TĨNH: Ẩn/hiện khu vực tạo QR tĩnh theo lựa chọn ===
+document.addEventListener('DOMContentLoaded', function () {
+    const qrTypeRadios = document.getElementsByName('qr-type');
+    const saveBtn = document.querySelector('button[onclick="generateAndSaveQRCode()"]');
+    function updateQRTypeUI() {
+        // Luôn enable nút tạo và lưu
+        saveBtn.disabled = false;
+        saveBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+    }
+    qrTypeRadios.forEach(radio => {
+        radio.addEventListener('change', updateQRTypeUI);
+    });
+    updateQRTypeUI();
+});
+
+// === GỘP LOGIC TẠO QR ĐỘNG VÀ TĨNH ===
 async function createAndSaveQRCode() {
     const name = document.getElementById("qr-name").value.trim();
     const content = document.getElementById("qr-content").value.trim();
     const color = document.getElementById("qr-color").value;
+    const qrType = document.querySelector('input[name="qr-type"]:checked').value;
 
     if (!name || !content || !currentUser) {
-        alert("Vui lòng nhập đầy đủ thông tin được yêu cầu hoặc đăng nhập lại!");
+        showToast('error', 'Vui lòng nhập đầy đủ thông tin được yêu cầu hoặc đăng nhập lại!');
         return;
     }
 
@@ -225,11 +241,21 @@ async function createAndSaveQRCode() {
         const qrRef = ref(database, "qrCodes");
         const newQRCodeRef = push(qrRef);
 
-        // Xây dựng URL chuyển hướng dựa trên URL gốc và ID của mã QR
-        const currentPath = window.location.pathname;
-        const projectRoot = currentPath.substring(0, currentPath.lastIndexOf('/'));
-        const redirectPath = `${projectRoot}/redirect.html`; // Đường dẫn file đích (cố định trên server)
-        const redirectURL = `${window.location.origin}${redirectPath}?id=${newQRCodeRef.key}&${content}`; // Thêm chỉ mục động
+        let redirectURL = "";
+        let type = "";
+
+        if (qrType === "dynamic") {
+            // QR động: redirect như cũ
+            const currentPath = window.location.pathname;
+            const projectRoot = currentPath.substring(0, currentPath.lastIndexOf('/'));
+            const redirectPath = `${projectRoot}/redirect.html`;
+            redirectURL = `${window.location.origin}${redirectPath}?id=${newQRCodeRef.key}&${content}`;
+            type = "dynamic";
+        } else {
+            // QR tĩnh: redirectURL là nội dung gốc
+            redirectURL = content;
+            type = "static";
+        }
 
         await set(newQRCodeRef, {
             userId: currentUser.uid,
@@ -237,15 +263,16 @@ async function createAndSaveQRCode() {
             content,
             redirectURL,
             color,
+            type,
             createdAt: new Date().toISOString()
         });
 
         resetForm();
-        alert("Mã QR được tạo thành công!");
+        showToast('success', 'Mã QR được tạo thành công!');
         await loadQRCodes(currentUser.uid);
 
     } catch (error) {
-        alert("Đã xảy ra lỗi khi tạo mã QR!");
+        showToast('error', 'Đã xảy ra lỗi khi tạo mã QR!');
     }
 }
 
@@ -359,11 +386,15 @@ function createQRCodeActions(qr) {
     // Hiển thị thông tin traffic
     const trafficInfo = document.createElement("p");
     trafficInfo.className = "text-sm text-gray-500 mb-2";
-    const usersText = uniqueUsers ? `${uniqueUsers} người truy cập` : '0 người truy cập';
-    const lastAccessText = lastAccess
-        ? `Lần cuối: ${lastAccess.toLocaleString("vi-VN")}`
-        : 'Không có thời gian';
-    trafficInfo.textContent = `${usersText}, ${lastAccessText}`;
+    if (qr.type === 'static') {
+        trafficInfo.textContent = 'Mã QR tĩnh: Không thể thống kê lượt truy cập';
+    } else {
+        const usersText = uniqueUsers ? `${uniqueUsers} người truy cập` : '0 người truy cập';
+        const lastAccessText = lastAccess
+            ? `Lần cuối: ${lastAccess.toLocaleString("vi-VN")}`
+            : 'Không có thời gian';
+        trafficInfo.textContent = `${usersText}, ${lastAccessText}`;
+    }
     qrActions.appendChild(trafficInfo);
 
     // hàm tạo button với icon
@@ -398,10 +429,10 @@ function createQRCodeActions(qr) {
 
         try {
             await navigator.clipboard.writeText(link);
-            alert('Đã sao chép link thành công!');
+            showToast('success', 'Đã sao chép link thành công!');
         } catch (err) {
             console.error('Không thể sao chép link:', err);
-            alert('Không thể sao chép link. Vui lòng thử lại.');
+            showToast('error', 'Không thể sao chép link. Vui lòng thử lại.');
         }
     }
 
@@ -466,7 +497,7 @@ async function downloadQRCode(qr) {
         link.click();
     } catch (error) {
         //console.error("Error downloading QR code:", error);
-        alert("Đã xảy ra lỗi khi tải xuống mã QR!");
+        showToast('error', 'Đã xảy ra lỗi khi tải xuống mã QR!');
     }
 }
 
@@ -531,7 +562,7 @@ async function saveQRCodeEdit() {
     const newQrContent = document.getElementById("edit-qr-content").value.trim();
 
     if (!newQrName || !newQrContent) {
-        alert("Vui lòng nhập tất cả thông tin bắt buộc!");
+        showToast('error', 'Vui lòng nhập tất cả thông tin bắt buộc!');
         return;
     }
 
@@ -547,29 +578,51 @@ async function saveQRCodeEdit() {
             updatedAt: new Date().toISOString()
         });
 
-        alert("Mã QR được cập nhật thành công!");
+        showToast('success', 'Mã QR được cập nhật thành công!');
         closeEditModal();
     } catch (error) {
         //console.error("Error updating QR code:", error);
-        alert("Đã xảy ra lỗi khi cập nhật mã QR!");
+        showToast('error', 'Đã xảy ra lỗi khi cập nhật mã QR!');
     }
 }
 
-// Xóa QR Code
+// Thay thế confirm khi xóa QR bằng modal xác nhận đẹp mắt
+function showConfirm(message, onConfirm) {
+    // Nếu đã có modal thì không tạo thêm
+    if (document.getElementById('custom-confirm-modal')) return;
+    const modal = document.createElement('div');
+    modal.id = 'custom-confirm-modal';
+    modal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40';
+    modal.innerHTML = `
+      <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-xs text-center animate-fadeIn">
+        <p class="mb-6 text-gray-800 text-base">${message}</p>
+        <div class="flex justify-center gap-4">
+          <button id="confirm-ok" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Xác nhận</button>
+          <button id="confirm-cancel" class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400">Hủy</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    document.getElementById('confirm-ok').onclick = () => {
+        modal.remove();
+        onConfirm();
+    };
+    document.getElementById('confirm-cancel').onclick = () => {
+        modal.remove();
+    };
+}
+
+// Sửa hàm deleteQRCode để dùng showConfirm thay cho confirm
 async function deleteQRCode(key) {
-    if (!confirm("Bạn có chắc chắn muốn xóa mã QR này không?")) {
-        return;
-    }
-
-    try {
-        await set(ref(database, `qrCodes/${key}`), null);
-        alert("Đã xóa mã QR thành công!");
-        await loadQRCodes(currentUser.uid);
-
-    } catch (error) {
-        //console.error("Error deleting QR code:", error);
-        alert("Đã xảy ra lỗi khi xóa mã QR.");
-    }
+    showConfirm("Bạn có chắc chắn muốn xóa mã QR này không?", async () => {
+        try {
+            await set(ref(database, `qrCodes/${key}`), null);
+            showToast('success', 'Đã xóa mã QR thành công!');
+            await loadQRCodes(currentUser.uid);
+        } catch (error) {
+            showToast('error', 'Đã xảy ra lỗi khi xóa mã QR.');
+        }
+    });
 }
 
 // Lọc QR Codes
@@ -625,16 +678,16 @@ document.getElementById('qr-color').addEventListener('input', function (event) {
 
 
 // Vô hiệu hóa chuột phải
-document.addEventListener('contextmenu', function (e) {
-    e.preventDefault();
-});
+// document.addEventListener('contextmenu', function (e) {
+//     e.preventDefault();
+// });
 
-// Vô hiệu hóa phím F12 và DevTools
-document.addEventListener('keydown', function (e) {
-    if (e.key === "F12" || (e.ctrlKey && e.shiftKey && e.key === "I")) {
-        e.preventDefault();
-    }
-});
+// // Vô hiệu hóa phím F12 và DevTools
+// document.addEventListener('keydown', function (e) {
+//     if (e.key === "F12" || (e.ctrlKey && e.shiftKey && e.key === "I")) {
+//         e.preventDefault();
+//     }
+// });
 
 // Hướng dẫn sử dụng
 document.addEventListener('DOMContentLoaded', () => {
@@ -651,6 +704,12 @@ function startIntroGuide() {
             { intro: "Chào mừng bạn đến với Trình tạo mã QR!" },
             { element: '#qr-name', intro: "Nhập tên gợi nhớ cho mã QR tại đây." },
             { element: '#qr-content', intro: "Nhập nội dung (URL) mà mã QR sẽ liên kết." },
+            {
+                element: '.mb-4.flex.gap-4',
+                intro: `<b>Chọn loại mã QR:</b><br><br>
+                <b>QR Động</b>: Cho phép thống kê lượt truy cập, chỉnh sửa hoặc thu hồi link sau này. Phù hợp cho các trường hợp cần quản lý, kiểm soát hoặc thay đổi nội dung liên kết.<br><br>
+                <b>QR Tĩnh</b>: Không thể thống kê lượt truy cập, link cố định, không chỉnh sửa được sau khi tạo. Phù hợp cho các trường hợp chia sẻ thông tin cố định, không cần quản lý truy cập.`
+            },
             { element: '#qr-color', intro: "Bạn có thể chọn màu sắc cho mã QR." },
             { element: '#qr-list-container', intro: "Danh sách các mã QR đã tạo sẽ xuất hiện tại đây." }
         ],
@@ -660,6 +719,7 @@ function startIntroGuide() {
     });
     intro.start();
 }
+window.startIntroGuide = startIntroGuide;
 
 // xuất ra các hàm
 window.generateAndSaveQRCode = createAndSaveQRCode;
@@ -667,3 +727,16 @@ window.validateURL = validateURL;
 window.filterQRCodes = filterQRCodes;
 window.closeEditModal = closeEditModal;
 window.saveQRCodeEdit = saveQRCodeEdit;
+
+// Thay thế alert bằng showToast
+function showToast(type, message) {
+    let toast = document.createElement('div');
+    toast.className = `fixed z-50 left-1/2 transform -translate-x-1/2 top-8 px-6 py-3 rounded shadow-lg text-white text-base font-medium transition-all duration-300 ${type === 'success' ? 'bg-green-500' : 'bg-red-500'}`;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.top = '0px';
+        setTimeout(() => toast.remove(), 300);
+    }, 2500);
+}
