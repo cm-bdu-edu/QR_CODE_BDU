@@ -25,6 +25,11 @@
             <div id="user-info"
                 class="flex items-center gap-x-4 w-full sm:w-auto justify-center sm:justify-end mt-4 sm:mt-0">
                 <span id="user-name" class="font-medium"></span>
+                <button id="help-btn"
+                    class="bg-yellow-400 text-gray-900 px-4 py-2 rounded-md hover:bg-yellow-500 focus:outline-none focus:ring focus:ring-yellow-300 w-full sm:w-auto font-semibold"
+                    onclick="startIntroGuide()">
+                    Hướng dẫn sử dụng
+                </button>
                 <button id="logout-btn"
                     class="bg-red-500 px-4 py-2 rounded-md hover:bg-red-600 focus:outline-none focus:ring focus:ring-red-300 w-full sm:w-auto">
                     Đăng Xuất
@@ -64,7 +69,16 @@
                     </small>
                 </div>
 
-                
+                <!-- Lựa chọn loại QR -->
+                <div class="mb-4 flex gap-4">
+                    <label class="flex items-center gap-2">
+                        <input type="radio" name="qr-type" value="dynamic" checked> QR Động
+                    </label>
+                    <label class="flex items-center gap-2">
+                        <input type="radio" name="qr-type" value="static"> QR Tĩnh
+                    </label>
+                </div>
+
                 <div class="qr-color-picker mb-4">
                     <label for="qr-color" class="block font-medium mb-2 text-gray-700">Chọn màu mã QR</label>
                     <div class="flex items-center gap-4">
