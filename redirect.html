@@ -6,177 +6,237 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" href="./image/Logo.ico" type="image/x-icon">
     <title>Đang tải, vui lòng chờ...</title>
-
-</head>
-
-<body>
-    <!-- <p>Đang chuyển hướng...</p> -->
-
-    <div class="loader">
-        <div class="box box-1">
-            <div class="side-left"></div>
-            <div class="side-right"></div>
-            <div class="side-top"></div>
-        </div>
-        <div class="box box-2">
-            <div class="side-left"></div>
-            <div class="side-right"></div>
-            <div class="side-top"></div>
-        </div>
-        <div class="box box-3">
-            <div class="side-left"></div>
-            <div class="side-right"></div>
-            <div class="side-top"></div>
-        </div>
-        <div class="box box-4">
-            <div class="side-left"></div>
-            <div class="side-right"></div>
-            <div class="side-top"></div>
-        </div>
-    </div>
-
     <style>
-       
+        :root {
+            --brand: #2563eb;
+            --brand-deep: #0f4cbd;
+            --ink: #14213d;
+            --muted: #66758f;
+            --surface: rgba(255, 255, 255, 0.92);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
             margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background:
+                radial-gradient(circle at 16% 18%, rgba(96, 165, 250, 0.24), transparent 28%),
+                radial-gradient(circle at 82% 20%, rgba(59, 130, 246, 0.18), transparent 26%),
+                linear-gradient(180deg, #f8fbff, #dbeafe);
+            color: var(--ink);
+        }
+
+        .redirect-shell {
+            width: min(92vw, 720px);
+            padding: 2rem 1.5rem;
+            text-align: center;
+        }
+
+        .redirect-card {
+            position: relative;
+            overflow: hidden;
+            border-radius: 28px;
+            padding: 2rem 1.5rem;
+            background:
+                linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(239, 246, 255, 0.9));
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 26px 60px -42px rgba(37, 99, 235, 0.75);
+            backdrop-filter: blur(10px);
+        }
+
+        .redirect-card::after {
+            content: "";
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            right: -70px;
+            top: -80px;
+            border-radius: 50%;
+            background: rgba(37, 99, 235, 0.08);
+        }
+
+        .brand-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.65rem;
+            padding: 0.55rem 0.85rem;
+            border-radius: 999px;
+            background: rgba(37, 99, 235, 0.08);
+            color: var(--brand-deep);
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .brand-badge img {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+        }
+
+        .redirect-title {
+            font-size: clamp(1.8rem, 4vw, 2.6rem);
+            line-height: 1.15;
+            margin: 1.2rem 0 0.75rem;
+            font-weight: 800;
+        }
+
+        .redirect-text {
+            color: var(--muted);
+            font-size: 1rem;
+            line-height: 1.7;
+            max-width: 480px;
+            margin: 0 auto;
         }
 
         .loader {
-            scale: 3;
-            height: 50px;
-            width: 40px;
+            width: 78px;
+            height: 78px;
+            margin: 1.8rem auto 0;
+            border: 7px solid #cfe0ff;
+            border-top-color: var(--brand);
+            border-radius: 50%;
+            animation: spin 0.9s linear infinite;
+            box-shadow: 0 0 0 10px rgba(255, 255, 255, 0.55);
         }
 
-        .box {
-            position: relative;
-            opacity: 0;
-            left: 10px;
+        .loader-label {
+            margin-top: 1.4rem;
+            font-size: 0.95rem;
+            color: var(--muted);
         }
 
-        .side-left {
-            position: absolute;
-            background-color: #286cb5;
-            width: 19px;
-            height: 5px;
-            transform: skew(0deg, -25deg);
-            top: 14px;
-            left: 10px;
+        .guard-box {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(15, 23, 42, 0.48);
+            backdrop-filter: blur(6px);
+            z-index: 99;
         }
 
-        .side-right {
-            position: absolute;
-            background-color: #2f85e0;
-            width: 19px;
-            height: 5px;
-            transform: skew(0deg, 25deg);
-            top: 14px;
-            left: -9px;
+        .guard-card {
+            width: min(92vw, 420px);
+            background: var(--surface);
+            border-radius: 24px;
+            padding: 1.45rem;
+            border: 1px solid rgba(255, 255, 255, 0.78);
+            box-shadow: 0 30px 60px -36px rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(16px);
         }
 
-        .side-top {
-            position: absolute;
-            background-color: #5fa8f5;
-            width: 20px;
-            height: 20px;
-            rotate: 45deg;
-            transform: skew(-20deg, -20deg);
+        .guard-card h2 {
+            margin: 0;
+            font-size: 1.45rem;
+            font-weight: 800;
+            color: var(--ink);
         }
 
-        .box-1 {
-            animation: from-left 4s infinite;
+        .guard-subtitle {
+            margin: 0.7rem 0 1rem;
+            color: var(--muted);
+            line-height: 1.6;
+            font-size: 0.95rem;
         }
 
-        .box-2 {
-            animation: from-right 4s infinite;
-            animation-delay: 1s;
+        .guard-card input {
+            width: 100%;
+            padding: 0.9rem 1rem;
+            border-radius: 14px;
+            border: 1px solid #cbd5e1;
+            background: rgba(255, 255, 255, 0.95);
+            font-size: 1rem;
+            transition: 0.2s ease;
+            margin-bottom: 0.8rem;
         }
 
-        .box-3 {
-            animation: from-left 4s infinite;
-            animation-delay: 2s;
+        .guard-card input:focus {
+            outline: none;
+            border-color: rgba(37, 99, 235, 0.7);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
         }
 
-        .box-4 {
-            animation: from-right 4s infinite;
-            animation-delay: 3s;
+        .guard-card button {
+            width: 100%;
+            padding: 0.95rem 1rem;
+            border: none;
+            border-radius: 14px;
+            background: linear-gradient(135deg, var(--brand-deep), var(--brand));
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1rem;
+            box-shadow: 0 16px 34px -20px rgba(37, 99, 235, 0.95);
+            transition: transform 0.18s ease, opacity 0.18s ease;
         }
 
-        @keyframes from-left {
-            0% {
-                z-index: 20;
-                opacity: 0;
-                translate: -20px -6px;
+        .guard-card button:hover {
+            transform: translateY(-1px);
+        }
+
+        .guard-error {
+            color: #dc2626;
+            font-size: 0.88rem;
+            margin-bottom: 0.7rem;
+            min-height: 1.3em;
+            text-align: left;
+        }
+
+        @media (max-width: 640px) {
+            .redirect-card {
+                border-radius: 22px;
+                padding: 1.5rem 1.1rem;
             }
 
-            20% {
-                z-index: 10;
-                opacity: 1;
-                translate: 0px 0px;
-            }
-
-            40% {
-                z-index: 9;
-                translate: 0px 4px;
-            }
-
-            60% {
-                z-index: 8;
-                translate: 0px 8px;
-            }
-
-            80% {
-                z-index: 7;
-                opacity: 1;
-                translate: 0px 12px;
-            }
-
-            100% {
-                z-index: 5;
-                translate: 0px 30px;
-                opacity: 0;
+            .guard-card {
+                padding: 1.2rem;
+                border-radius: 20px;
             }
         }
 
-        @keyframes from-right {
-            0% {
-                z-index: 20;
-                opacity: 0;
-                translate: 20px -6px;
-            }
-
-            20% {
-                z-index: 10;
-                opacity: 1;
-                translate: 0px 0px;
-            }
-
-            40% {
-                z-index: 9;
-                translate: 0px 4px;
-            }
-
-            60% {
-                z-index: 8;
-                translate: 0px 8px;
-            }
-
-            80% {
-                z-index: 7;
-                opacity: 1;
-                translate: 0px 12px;
-            }
-
-            100% {
-                z-index: 5;
-                translate: 0px 30px;
-                opacity: 0;
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
             }
         }
     </style>
+</head>
+
+<body>
+    <main class="redirect-shell">
+        <section class="redirect-card">
+            <div class="brand-badge">
+               
+                <span>BDU-CM QR Redirect</span>
+            </div>
+            <h1 class="redirect-title">Đang xác thực và chuyển hướng</h1>
+            <p class="redirect-text">
+                Hệ thống đang kiểm tra quyền truy cập của mã QR và chuẩn bị mở nội dung đích cho bạn.
+            </p>
+            <div class="loader"></div>
+            <p class="loader-label">Vui lòng chờ trong giây lát...</p>
+        </section>
+    </main>
+
+    <div id="password-guard" class="guard-box">
+        <div class="guard-card">
+            <h2>QR có mật khẩu</h2>
+            <p class="guard-subtitle">Nhập mật khẩu để mở nội dung phía sau mã QR này.</p>
+            <div id="guard-error" class="guard-error"></div>
+            <input id="guard-password" type="password" placeholder="Nhập mật khẩu truy cập" autocomplete="current-password">
+            <button id="guard-submit" type="button">Xác nhận</button>
+        </div>
+    </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
@@ -190,11 +250,80 @@
             storageBucket: "qr-code-65808.firebasestorage.app",
             messagingSenderId: "953231243938",
             appId: "1:953231243938:web:318fde18c08154e01df5fb",
-            measurementId: "G-FMV89YRW06",
+            measurementId: "G-FMV89YRW06"
         };
 
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
+        const LOG_COOLDOWN_MS = 10 * 60 * 1000;
+
+        function shouldWriteAccessLog(qrId) {
+            try {
+                const storageKey = `qr_last_log_${qrId}`;
+                const lastLogged = Number(localStorage.getItem(storageKey) || 0);
+                const now = Date.now();
+                if (now - lastLogged < LOG_COOLDOWN_MS) return false;
+                localStorage.setItem(storageKey, String(now));
+                return true;
+            } catch (error) {
+                return true;
+            }
+        }
+
+        function scanCount(data) {
+            return Object.keys(data?.accessLogs || {}).length;
+        }
+
+        function validateDynamicRules(data) {
+            const settings = data?.settings || {};
+            const now = Date.now();
+
+            if (settings.expireAt) {
+                const expireTime = new Date(settings.expireAt).getTime();
+                if (!Number.isNaN(expireTime) && now > expireTime) {
+                    return "Mã QR này đã hết hạn.";
+                }
+            }
+
+            if (settings.maxScans && scanCount(data) >= Number(settings.maxScans)) {
+                return "Mã QR này đã đạt giới hạn lượt quét.";
+            }
+
+            return "";
+        }
+
+        async function writeAccessLog(qrId) {
+            if (!shouldWriteAccessLog(qrId)) return;
+            const accessLogsRef = ref(database, `qrCodes/${qrId}/accessLogs`);
+            await push(accessLogsRef, {
+                timestamp: new Date().toISOString(),
+                referrer: document.referrer || "Direct Access"
+            });
+        }
+
+        function showPasswordGuard(expected, onPass) {
+            const guard = document.getElementById("password-guard");
+            const input = document.getElementById("guard-password");
+            const button = document.getElementById("guard-submit");
+            const error = document.getElementById("guard-error");
+
+            guard.style.display = "flex";
+            input.focus();
+
+            const submit = () => {
+                if (input.value === expected) {
+                    guard.style.display = "none";
+                    onPass();
+                    return;
+                }
+                error.textContent = "Mật khẩu không đúng.";
+            };
+
+            button.onclick = submit;
+            input.onkeydown = (event) => {
+                if (event.key === "Enter") submit();
+            };
+        }
 
         window.onload = async function () {
             const urlParams = new URLSearchParams(window.location.search);
@@ -209,40 +338,34 @@
                 const qrCodeRef = ref(database, `qrCodes/${qrId}`);
                 const snapshot = await get(qrCodeRef);
 
-                if (snapshot.exists()) {
-                    const data = snapshot.val();
-
-                    // Ghi nhận lượt truy cập
-                    const accessLogsRef = ref(database, `qrCodes/${qrId}/accessLogs`);
-                    const logData = {
-                        timestamp: new Date().toISOString(),
-                        userAgent: navigator.userAgent,
-                        referrer: document.referrer || "Direct Access",
-                    };
-                    await push(accessLogsRef, logData);
-
-                    // Chuyển hướng
-                    window.location.href = data.content;
-                } else {
+                if (!snapshot.exists()) {
                     alert("Không tìm thấy nội dung QR Code!");
+                    return;
                 }
+
+                const data = snapshot.val();
+                const invalidReason = validateDynamicRules(data);
+                if (invalidReason) {
+                    alert(invalidReason);
+                    return;
+                }
+
+                const proceedRedirect = async () => {
+                    await writeAccessLog(qrId);
+                    window.location.replace(data.content);
+                };
+
+                const password = data?.settings?.password;
+                if (password) {
+                    showPasswordGuard(password, proceedRedirect);
+                    return;
+                }
+
+                await proceedRedirect();
             } catch (error) {
-                console.error("Error fetching QR Code content:", error);
                 alert("Có lỗi xảy ra khi truy cập nội dung QR Code.");
             }
         };
-
-        // Vô hiệu hóa chuột phải
-        document.addEventListener('contextmenu', function (e) {
-            e.preventDefault();
-        });
-
-        // Vô hiệu hóa phím F12 và DevTools
-        document.addEventListener('keydown', function (e) {
-            if (e.key === "F12" || (e.ctrlKey && e.shiftKey && e.key === "I")) {
-                e.preventDefault();
-            }
-        });
     </script>
 
 </body>

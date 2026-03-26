@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 
 <head>
   <meta charset="UTF-8">
@@ -7,51 +7,293 @@
   <title>QR Code BDU Authentication</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <link rel="shortcut icon" href="./image/Logo.ico" type="image/x-icon">
-
   <style>
+    :root {
+      --page-top: #f4f9ff;
+      --page-bottom: #dbeafe;
+      --brand-strong: #0f4cbd;
+      --brand-soft: #eaf3ff;
+      --ink: #14213d;
+      --muted: #5f6f8e;
+      --line: rgba(148, 163, 184, 0.28);
+    }
+
     body {
-      font-family: 'Roboto', sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 12% 18%, rgba(96, 165, 250, 0.22), transparent 34%),
+        radial-gradient(circle at 88% 12%, rgba(14, 165, 233, 0.18), transparent 28%),
+        linear-gradient(180deg, var(--page-top), var(--page-bottom));
+    }
+
+    .topbar {
+      background: linear-gradient(120deg, #0f4cbd, #2563eb 58%, #3b82f6);
+      box-shadow: 0 18px 40px -30px rgba(37, 99, 235, 0.85);
+    }
+
+    .login-shell {
+      position: relative;
+    }
+
+    .login-shell::before,
+    .login-shell::after {
+      content: "";
+      position: absolute;
+      border-radius: 999px;
+      pointer-events: none;
+      filter: blur(10px);
+    }
+
+    .login-shell::before {
+      width: 240px;
+      height: 240px;
+      top: 4%;
+      right: 6%;
+      background: rgba(56, 189, 248, 0.16);
+    }
+
+    .login-shell::after {
+      width: 180px;
+      height: 180px;
+      left: 4%;
+      bottom: 8%;
+      background: rgba(37, 99, 235, 0.12);
+    }
+
+    .hero-panel,
+    .auth-card {
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .hero-panel {
+      background:
+        linear-gradient(160deg, rgba(15, 76, 189, 0.97), rgba(37, 99, 235, 0.88)),
+        radial-gradient(circle at top right, rgba(255, 255, 255, 0.18), transparent 35%);
+      color: #fff;
+      min-height: 100%;
+      box-shadow: 0 28px 60px -42px rgba(15, 76, 189, 0.95);
+    }
+
+    .hero-panel::after {
+      content: "";
+      position: absolute;
+      inset: auto -10% -32% auto;
+      width: 280px;
+      height: 280px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.09);
+    }
+
+    .auth-card {
+      background: rgba(255, 255, 255, 0.82);
+      border: 1px solid rgba(255, 255, 255, 0.72);
+      box-shadow: 0 30px 60px -40px rgba(15, 23, 42, 0.78);
+    }
+
+    .info-chip {
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .field-input {
+      width: 100%;
+      padding: 0.95rem 1rem;
+      border-radius: 0.95rem;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      background: rgba(255, 255, 255, 0.92);
+      transition: 0.2s ease;
+    }
+
+    .field-input:focus {
+      outline: none;
+      border-color: rgba(37, 99, 235, 0.7);
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+      background: #ffffff;
+    }
+
+    .primary-btn {
+      background: linear-gradient(135deg, #0f4cbd, #2563eb);
+      box-shadow: 0 14px 30px -18px rgba(37, 99, 235, 0.95);
+      transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+    }
+
+    .primary-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 18px 34px -18px rgba(37, 99, 235, 0.98);
+    }
+
+    .secondary-btn {
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      background: rgba(255, 255, 255, 0.92);
+      transition: 0.18s ease;
+    }
+
+    .secondary-btn:hover {
+      background: #fff;
+      border-color: rgba(59, 130, 246, 0.35);
+      transform: translateY(-1px);
+    }
+
+    .auth-note {
+      color: var(--muted);
+    }
+
+    .divider-line {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(148, 163, 184, 0.35), transparent);
+    }
+
+    .auth-link {
+      color: var(--brand-strong);
+    }
+
+    .auth-link-danger {
+      color: #dc2626;
+    }
+
+    .status-box {
+      border-radius: 0.9rem;
+      padding: 0.85rem 1rem;
+      line-height: 1.45;
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+    }
+
+    .status-box.success {
+      background: #ecfdf5;
+      border-color: #a7f3d0;
+      color: #047857;
+    }
+
+    .status-box.error {
+      background: #fef2f2;
+      border-color: #fecaca;
+      color: #b91c1c;
+    }
+
+    @media (max-width: 1023px) {
+      .hero-panel {
+        min-height: auto;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .login-shell::before,
+      .login-shell::after {
+        display: none;
+      }
     }
   </style>
 </head>
 
-<body class="bg-white-400 text-gray-800">
-  <header class="bg-blue-600 text-white p-4">
-    <div class="flex items-center">
-      <img src="./image/appLogoIcon.png" alt="Logo" class="h-10 w-55 mr-3">
+<body class="text-gray-800">
+  <header class="topbar text-white px-5 py-4 sm:px-6">
+    <div class="w-full flex items-center gap-4 sm:gap-5">
+      <img src="./image/appLogoIcon.png" alt="Logo" class="h-10 w-auto flex-shrink-0">
       <h1 class="text-2xl font-bold">Trình tạo mã QR</h1>
     </div>
   </header>
 
-  <main class="container mx-auto mt-6">
-    <!-- Login & Register -->
-    <div id="auth-container" class="bg-white p-6 rounded-lg shadow-lg max-w-md mx-auto">
-      <h2 id="auth-title" class="text-lg font-semibold mb-4 text-center">Đăng Nhập</h2>
-      <div id="error-message" class="text-red-500 text-sm mb-4 hidden"></div>
-      <input id="email" type="email" placeholder="Email" class="w-full p-3 border rounded-md mb-4" />
-      <input id="password" type="password" placeholder="Mật khẩu" class="w-full p-3 border rounded-md mb-4" />
-      <button id="auth-action" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 w-full">Đăng
-        Nhập</button>
-      <p id="toggle-auth" class="text-sm text-center mt-4 cursor-pointer text-blue-500 hover:underline">
-        Chưa có tài khoản? Đăng ký ngay
-      </p>
-      <!-- link để truy cập tính năng quên mật khẩu -->
-      <p id="forgot-password" class="text-sm text-center mt-4 cursor-pointer text-red-500 hover:underline">
-        Quên mật khẩu?
-      </p>
-    </div>
+  <main class="login-shell w-full max-w-6xl mx-auto px-4 py-8 lg:py-10" style="min-height: calc(100vh - 72px);">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+      <section class="hero-panel rounded-3xl px-6 py-8 sm:px-8 lg:px-10 flex flex-col justify-between">
+        <div>
+          <span class="info-chip inline-flex items-center rounded-full px-4 py-2 text-xs uppercase tracking-widest font-semibold">
+            Nền tảng tạo mã QR
+          </span>
+          <h2 class="mt-6 text-3xl sm:text-4xl font-bold leading-tight">
+            Đăng nhập để quản lý mã QR gọn gàng, trực quan và an toàn hơn.
+          </h2>
+          <p class="mt-4 text-blue-100 text-base sm:text-lg leading-7 max-w-xl">
+            Tạo QR động hoặc tĩnh, theo dõi lượt quét, cập nhật liên kết sau khi phát hành.
+          </p>
+        </div>
 
-    <!-- Form quên mật khẩu -->
-    <div id="reset-container" class="bg-white p-6 rounded-lg shadow-lg max-w-md mx-auto hidden">
-      <h2 class="text-lg font-semibold mb-4 text-center">Quên Mật Khẩu</h2>
-      <div id="reset-error-message" class="text-red-500 text-sm mb-4 hidden"></div>
-      <input id="reset-email" type="email" placeholder="Email" class="w-full p-3 border rounded-md mb-4" />
-      <button id="reset-action" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 w-full">
-        Gửi liên kết đặt lại mật khẩu
-      </button>
-      <p id="back-to-login" class="text-sm text-center mt-4 cursor-pointer text-blue-500 hover:underline">
-        Quay lại Đăng Nhập
-      </p>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-8">
+          <div class="info-chip rounded-2xl p-4">
+            <p class="text-2xl font-bold">Realtime</p>
+            <p class="text-sm text-blue-100 mt-1">Preview và kiểm tra nội dung ngay khi thao tác.</p>
+          </div>
+          <div class="info-chip rounded-2xl p-4">
+            <p class="text-2xl font-bold">Dynamic</p>
+            <p class="text-sm text-blue-100 mt-1">Theo dõi lượt quét và chỉnh sửa liên kết về sau.</p>
+          </div>
+          <div class="info-chip rounded-2xl p-4">
+            <p class="text-2xl font-bold">Secure</p>
+            <p class="text-sm text-blue-100 mt-1">Giới hạn email `@bdu.edu.vn` để kiểm soát truy cập.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="auth-card rounded-3xl p-6 sm:p-8 lg:p-9 flex items-center">
+        <div class="w-full max-w-md mx-auto">
+          <div id="auth-container">
+            <div class="mb-6 text-center">
+              <p class="text-sm uppercase tracking-widest font-semibold text-blue-700">Chào mừng trở lại</p>
+              <h2 id="auth-title" class="text-3xl font-bold mt-2" style="color: var(--ink);">Đăng Nhập</h2>
+              <p class="auth-note mt-3 text-sm">Sử dụng email trường để truy cập hệ thống tạo và quản lý QR.</p>
+            </div>
+
+            <div id="error-message" class="text-sm mb-4 hidden"></div>
+
+            <div class="space-y-4">
+              <input id="email" type="email" placeholder="Email @bdu.edu.vn" class="field-input" />
+              <input id="password" type="password" placeholder="Mật khẩu" class="field-input" />
+            </div>
+
+            <button id="auth-action" class="primary-btn text-white px-4 py-3 rounded-2xl w-full mt-5 font-semibold">
+              Đăng Nhập
+            </button>
+
+            <div class="my-5 flex items-center gap-3">
+              <div class="divider-line flex-1"></div>
+              <span class="text-xs uppercase tracking-widest text-gray-400">hoặc</span>
+              <div class="divider-line flex-1"></div>
+            </div>
+
+            <button id="google-auth-action"
+              class="secondary-btn w-full text-gray-700 px-4 py-3 rounded-2xl flex items-center justify-center gap-3 font-medium">
+              <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                <path fill="#EA4335"
+                  d="M12 10.2v3.9h5.5c-.2 1.3-1.5 3.9-5.5 3.9-3.3 0-6-2.7-6-6s2.7-6 6-6c1.9 0 3.1.8 3.8 1.4l2.6-2.5C16.7 3.3 14.6 2.4 12 2.4A9.6 9.6 0 0 0 2.4 12 9.6 9.6 0 0 0 12 21.6c5.5 0 9.1-3.9 9.1-9.4 0-.6-.1-1.1-.1-1.6H12z" />
+                <path fill="#FBBC05" d="M3.5 7.3l3.2 2.3c.9-1.8 2.8-3 5.3-3 1.9 0 3.1.8 3.8 1.4l2.6-2.5C16.7 3.3 14.6 2.4 12 2.4c-3.7 0-6.9 2.1-8.5 4.9z" />
+                <path fill="#34A853" d="M12 21.6c2.5 0 4.6-.8 6.2-2.3l-3-2.5c-.8.5-1.8.8-3.2.8-3.9 0-5.3-2.6-5.5-3.8l-3.2 2.4c1.6 2.9 4.7 5.4 8.7 5.4z" />
+                <path fill="#4285F4" d="M21.1 12.2c0-.6-.1-1.1-.1-1.6H12v3.9h5.5c-.2 1.1-1 2-2.2 2.6l3 2.5c1.8-1.7 2.8-4.2 2.8-7.4z" />
+              </svg>
+              <span>Đăng nhập với Google</span>
+            </button>
+
+            <p id="toggle-auth" class="auth-link text-sm text-center mt-5 cursor-pointer hover:underline">
+              Chưa có tài khoản? Đăng ký ngay
+            </p>
+            <p id="forgot-password" class="auth-link-danger text-sm text-center mt-3 cursor-pointer hover:underline">
+              Quên mật khẩu?
+            </p>
+          </div>
+
+          <div id="reset-container" class="hidden">
+            <div class="mb-6 text-center">
+              <p class="text-sm uppercase tracking-widest font-semibold text-blue-700">Khôi phục truy cập</p>
+              <h2 class="text-3xl font-bold mt-2" style="color: var(--ink);">Quên Mật Khẩu</h2>
+              <p class="auth-note mt-3 text-sm">Nhập email trường để nhận liên kết đặt lại mật khẩu.</p>
+            </div>
+
+            <div id="reset-error-message" class="text-sm mb-4 hidden"></div>
+            <input id="reset-email" type="email" placeholder="Email @bdu.edu.vn" class="field-input" />
+            <button id="reset-action" class="primary-btn text-white px-4 py-3 rounded-2xl w-full mt-5 font-semibold">
+              Gửi liên kết đặt lại mật khẩu
+            </button>
+            <p id="back-to-login" class="auth-link text-sm text-center mt-5 cursor-pointer hover:underline">
+              Quay lại Đăng Nhập
+            </p>
+          </div>
+        </div>
+      </div>
+      </section>
     </div>
   </main>
 
@@ -64,9 +306,13 @@
       sendEmailVerification,
       sendPasswordResetEmail,
       onAuthStateChanged,
+      GoogleAuthProvider,
+      signInWithPopup,
+      signInWithRedirect,
+      getRedirectResult,
+      signOut
     } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
 
-    // Cấu hình Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyDnkxcPxH3Gw0l-BNro17KKX2AEV_6bsaE",
       authDomain: "qr-code-65808.firebaseapp.com",
@@ -78,13 +324,19 @@
       measurementId: "G-FMV89YRW06",
     };
 
+    const ALLOWED_DOMAIN = "bdu.edu.vn";
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const googleProvider = new GoogleAuthProvider();
+    googleProvider.setCustomParameters({
+      prompt: "select_account",
+      hd: ALLOWED_DOMAIN
+    });
 
-    // DOM Elements
     const authContainer = document.getElementById("auth-container");
     const authTitle = document.getElementById("auth-title");
     const authAction = document.getElementById("auth-action");
+    const googleAuthAction = document.getElementById("google-auth-action");
     const toggleAuth = document.getElementById("toggle-auth");
     const errorMessage = document.getElementById("error-message");
     const emailInput = document.getElementById("email");
@@ -98,18 +350,85 @@
 
     let isLogin = true;
 
-    // Theo dõi trạng thái xác thực của người dùng
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        // Nếu email đã được xác thực, chuyển hướng đến trang create_qrcode.html
-        if (user.emailVerified) {
-          window.location.href = "create_qrcode.html";
+    function isAllowedEmail(email = "") {
+      return email.toLowerCase().endsWith(`@${ALLOWED_DOMAIN}`);
+    }
+
+    function isGoogleUser(user) {
+      return user?.providerData?.some((provider) => provider.providerId === "google.com");
+    }
+
+    function showErrorMessage(message) {
+      errorMessage.textContent = message;
+      errorMessage.className = "status-box error text-sm mb-4";
+    }
+
+    function showSuccessMessage(message) {
+      errorMessage.textContent = message;
+      errorMessage.className = "status-box success text-sm mb-4";
+    }
+
+    function clearErrorMessage() {
+      errorMessage.textContent = "";
+      errorMessage.className = "text-sm mb-4 hidden";
+    }
+
+    async function validateGoogleDomainAndContinue(user) {
+      if (!isAllowedEmail(user.email || "")) {
+        await signOut(auth);
+        showErrorMessage("Tài khoản Google phải dùng email @bdu.edu.vn.");
+        return;
+      }
+      window.location.href = "create_qrcode.html";
+    }
+
+    function handleOAuthError(error) {
+      const domain = window.location.hostname;
+      if (error.code === "auth/unauthorized-domain") {
+        showErrorMessage(
+          `Domain "${domain}" chưa được cấu hình OAuth trong Firebase. Vào Firebase Console > Authentication > Settings > Authorized domains và thêm domain này.`
+        );
+        return;
+      }
+
+      if (error.code === "auth/popup-blocked") {
+        showErrorMessage("Trình duyệt chặn popup. Hệ thống sẽ chuyển sang đăng nhập bằng redirect.");
+        signInWithRedirect(auth, googleProvider);
+        return;
+      }
+
+      if (error.code === "auth/popup-closed-by-user") {
+        showErrorMessage("Bạn đã đóng cửa sổ đăng nhập Google trước khi hoàn tất.");
+        return;
+      }
+
+      showErrorMessage(error.message);
+    }
+
+    getRedirectResult(auth)
+      .then(async (result) => {
+        if (result?.user) {
+          await validateGoogleDomainAndContinue(result.user);
         }
+      })
+      .catch(handleOAuthError);
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) return;
+
+      if (!isAllowedEmail(user.email || "")) {
+        await signOut(auth);
+        showErrorMessage("Chỉ chấp nhận email từ miền bdu.edu.vn.");
+        return;
+      }
+
+      if (isGoogleUser(user) || user.emailVerified) {
+        window.location.href = "create_qrcode.html";
       }
     });
 
-    // Chuyển đổi giữa đăng nhập và đăng ký
     toggleAuth.addEventListener("click", () => {
+      clearErrorMessage();
       isLogin = !isLogin;
       authTitle.textContent = isLogin ? "Đăng Nhập" : "Đăng Ký";
       authAction.textContent = isLogin ? "Đăng Nhập" : "Đăng Ký";
@@ -118,49 +437,38 @@
         : "Đã có tài khoản? Đăng nhập ngay";
     });
 
-    // Xử lý đăng nhập và đăng ký
     authAction.addEventListener("click", async () => {
+      clearErrorMessage();
       const email = emailInput.value.trim();
       const password = passwordInput.value.trim();
 
-      // Kiểm tra email có đuôi "bdu.edu.vn"
-      if (!email.endsWith("@bdu.edu.vn")) {
-        showErrorMessage("Chỉ chấp nhận email từ miền bdu.edu.vn.");
+      if (!email || !password) {
+        showErrorMessage("Vui lòng nhập email và mật khẩu.");
         return;
       }
 
-      if (!email || !password) {
-        showErrorMessage("Vui lòng nhập email và mật khẩu");
+      if (!isAllowedEmail(email)) {
+        showErrorMessage("Chỉ chấp nhận email từ miền bdu.edu.vn.");
         return;
       }
 
       try {
         if (isLogin) {
-          // Xử lý đăng nhập
           const userCredential = await signInWithEmailAndPassword(auth, email, password);
           const user = userCredential.user;
 
           if (!user.emailVerified) {
-            showErrorMessage("Email chưa được xác minh. Vui lòng kiểm tra hộp thư của bạn.");
-            // Gửi lại email xác minh nếu cần
             await sendEmailVerification(user);
+            showErrorMessage("Email chưa xác minh. Hệ thống đã gửi lại email xác minh.");
             return;
           }
           window.location.href = "create_qrcode.html";
         } else {
-          // Xử lý đăng ký
           const userCredential = await createUserWithEmailAndPassword(auth, email, password);
           const user = userCredential.user;
-
-          // Gửi email xác minh
           await sendEmailVerification(user);
-
-          // Đăng xuất người dùng ngay sau khi đăng ký để họ phải xác minh email trước
-          await auth.signOut();
-
-          showMessage("Một email xác minh đã được gửi. Vui lòng xác minh email của bạn trước khi đăng nhập.");
-
-          // Chuyển về form đăng nhập
+          await signOut(auth);
+          showSuccessMessage("Đã gửi email xác minh. Vui lòng xác minh trước khi đăng nhập.");
           isLogin = true;
           authTitle.textContent = "Đăng Nhập";
           authAction.textContent = "Đăng Nhập";
@@ -171,30 +479,25 @@
       }
     });
 
-    // Hiển thị thông báo lỗi
-    const showErrorMessage = (message) => {
-      errorMessage.textContent = message;
-      errorMessage.classList.remove("hidden");
-    };
+    googleAuthAction.addEventListener("click", async () => {
+      clearErrorMessage();
+      try {
+        const credential = await signInWithPopup(auth, googleProvider);
+        await validateGoogleDomainAndContinue(credential.user);
+      } catch (error) {
+        handleOAuthError(error);
+      }
+    });
 
-    const showMessage = (message) => {
-      errorMessage.textContent = message;
-      errorMessage.classList.remove("hidden");
-      errorMessage.style.color = "#4CAF50"; // Màu xanh cho thông báo thành công
-    };
-
-    const clearErrorMessage = () => {
-      errorMessage.classList.add("hidden");
-      errorMessage.style.color = ""; // Reset màu
-    };
-
-    // Xử lý quên mật khẩu
     forgotPasswordLink.addEventListener("click", () => {
       authContainer.classList.add("hidden");
       resetContainer.classList.remove("hidden");
     });
 
     backToLogin.addEventListener("click", () => {
+      clearErrorMessage();
+      resetErrorMessage.textContent = "";
+      resetErrorMessage.classList.add("hidden");
       resetContainer.classList.add("hidden");
       authContainer.classList.remove("hidden");
     });
@@ -202,42 +505,29 @@
     resetAction.addEventListener("click", async () => {
       const email = resetEmailInput.value.trim();
 
-      if (!email.endsWith("@bdu.edu.vn")) {
-        resetErrorMessage.textContent = "Chỉ chấp nhận email từ miền bdu.edu.vn.";
-        resetErrorMessage.classList.remove("hidden");
+      if (!email) {
+        resetErrorMessage.textContent = "Vui lòng nhập email.";
+        resetErrorMessage.className = "status-box error text-sm mb-4";
         return;
       }
 
-      if (!email) {
-        resetErrorMessage.textContent = "Vui lòng nhập email.";
-        resetErrorMessage.classList.remove("hidden");
+      if (!isAllowedEmail(email)) {
+        resetErrorMessage.textContent = "Chỉ chấp nhận email từ miền bdu.edu.vn.";
+        resetErrorMessage.className = "status-box error text-sm mb-4";
         return;
       }
 
       try {
         await sendPasswordResetEmail(auth, email);
-        showMessage("Liên kết đặt lại mật khẩu đã được gửi đến email của bạn.");
+        showSuccessMessage("Liên kết đặt lại mật khẩu đã được gửi đến email của bạn.");
         resetContainer.classList.add("hidden");
         authContainer.classList.remove("hidden");
       } catch (error) {
         resetErrorMessage.textContent = error.message;
-        resetErrorMessage.classList.remove("hidden");
-      }
-    });
-
-    // Vô hiệu hóa chuột phải
-    document.addEventListener('contextmenu', function (e) {
-      e.preventDefault();
-    });
-
-    // Vô hiệu hóa phím F12 và DevTools
-    document.addEventListener('keydown', function (e) {
-      if (e.key === "F12" || (e.ctrlKey && e.shiftKey && e.key === "I")) {
-        e.preventDefault();
+        resetErrorMessage.className = "status-box error text-sm mb-4";
       }
     });
   </script>
-
 </body>
 
 </html>

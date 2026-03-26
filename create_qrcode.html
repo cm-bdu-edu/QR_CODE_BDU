@@ -15,9 +15,9 @@
 
 </head>
 
-<body class="bg-white-400 text-gray-800">
-    <header class="bg-blue-600 text-white p-4">
-        <div class="container mx-auto flex flex-wrap items-center justify-between">
+<body class="text-gray-800 min-h-screen">
+    <header class="header-shell text-white p-4">
+        <div class="w-full app-wide mx-auto flex flex-wrap items-center justify-between">
             <div class="flex items-center gap-x-3 w-full sm:w-auto justify-center sm:justify-start">
                 <img src="./image/appLogoIcon.png" alt="Logo" class="h-10 w-auto mr-3">
                 <h1 class="text-xl sm:text-2xl font-bold whitespace-nowrap">Trình tạo mã QR</h1>
@@ -38,99 +38,366 @@
         </div>
     </header>
 
-    <main class="container mx-auto bg-white rounded-lg shadow-lg p-4 sm:p-6 mt-6">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Left Section: QR Code List -->
-            <div class="order-2 lg:order-1">
-                <h2 class="text-lg font-semibold mb-4">Danh sách mã QR của bạn</h2>
-                <input type="text" id="search-qr" placeholder="Tìm kiếm mã QR..."
-                    class="w-full p-2 mb-4 border rounded-md" oninput="filterQRCodes()">
-                <div id="qr-list-container" class="bg-gray-100 p-4 rounded-md shadow-md max-h-80 overflow-y-auto">
-                    <ul id="qr-list"></ul>
-                </div>
-            </div>
-
-            <!-- Right Section: QR Code Generator -->
-            <div class="order-1 lg:order-2">
-                <h2 class="text-lg font-semibold mb-4">Tạo Mã QR</h2>
-                <div class="mb-4">
-                    <label for="qr-name" class="block font-medium mb-2">Tên gợi nhớ</label>
-                    <input type="text" id="qr-name" placeholder="Tên mã QR (VD: QR Sự kiện)"
-                        class="w-full p-3 border rounded-md">
-                </div>
-
-                <div class="mb-4">
-                    <label for="qr-content" class="block font-medium mb-2">Nội dung <i>(đường dẫn liên kết)</i></label>
-                    <input type="url" id="qr-content" class="w-full p-3 border rounded-md" 
-                           pattern="https?://.+" maxlength="2048" 
-                           placeholder="https:// hoặc http://" required oninput="validateURL(this)">
-                    <small id="url-error" class="text-red-500 hidden">
-                        Vui lòng nhập đúng định dạng URL (bắt đầu bằng http:// hoặc https://)
-                    </small>
-                </div>
-
-                <!-- Lựa chọn loại QR -->
-                <div class="mb-4 flex gap-4">
-                    <label class="flex items-center gap-2">
-                        <input type="radio" name="qr-type" value="dynamic" checked> QR Động
-                    </label>
-                    <label class="flex items-center gap-2">
-                        <input type="radio" name="qr-type" value="static"> QR Tĩnh
-                    </label>
-                </div>
-
-                <div class="qr-color-picker mb-4">
-                    <label for="qr-color" class="block font-medium mb-2 text-gray-700">Chọn màu mã QR</label>
-                    <div class="flex items-center gap-4">
-                        <input type="color" id="qr-color" value="#000000"
-                            class="qr-color-input p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        <div id="color-display" class="w-16 h-7 border rounded-md" style="background-color: #000000;">
+    <main class="app-shell w-full app-wide mx-auto rounded-2xl shadow-xl p-4 sm:p-6 mt-4 sm:mt-6 mb-6">
+        <section class="panel-box mb-5 qr-create-section">
+            <h2 class="text-xl font-semibold mb-3">Tạo Mã QR</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                <div class="lg:col-span-7 form-zone" id="create-form-zone">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                            <label for="qr-name" class="form-label">Tên gợi nhớ <span class="label-tip" title="Tên để bạn dễ tìm lại mã QR trong danh sách">?</span></label>
+                            <input type="text" id="qr-name" placeholder="VD: Landing page tuyển sinh"
+                                class="w-full border rounded-md compact-input">
+                        </div>
+                        <div>
+                            <label for="qr-category" class="form-label">Danh mục <span class="label-tip" title="Giúp phân loại nhanh: Marketing, Tuyển sinh, Nội bộ...">?</span></label>
+                            <div class="category-field">
+                                <input type="text" id="qr-category" placeholder="VD: Marketing" class="w-full border rounded-md compact-input" autocomplete="off">
+                                <div id="qr-category-menu" class="category-menu hidden"></div>
+                            </div>
                         </div>
                     </div>
+
+                    <div class="grid grid-cols-1 gap-3 mt-3">
+                        <div>
+                            <label for="content-mode" class="form-label">Template nội dung</label>
+                            <select id="content-mode" class="w-full border rounded-md compact-input">
+                                <option value="url">URL</option>
+                                <option value="wifi">WiFi</option>
+                                <option value="contact">Contact</option>
+                                <option value="event">Event</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="template-url" class="template-block mt-3">
+                        <label for="qr-content" class="form-label">Nội dung liên kết (URL)</label>
+                        <input type="url" id="qr-content" class="w-full border rounded-md compact-input"
+                            pattern="https?://.+" maxlength="2048"
+                            placeholder="https:// hoặc http://" required oninput="validateURL(this)">
+                        <small id="url-error" class="text-red-500 hidden">Vui lòng nhập đúng định dạng URL (bắt đầu bằng http:// hoặc https://)</small>
+                    </div>
+
+                    <div id="template-wifi" class="template-block hidden mt-3">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                                <label for="wifi-ssid" class="form-label">WiFi SSID</label>
+                                <input type="text" id="wifi-ssid" class="w-full border rounded-md compact-input" placeholder="Tên WiFi">
+                            </div>
+                            <div>
+                                <label for="wifi-password" class="form-label">WiFi Password</label>
+                                <input type="text" id="wifi-password" class="w-full border rounded-md compact-input" placeholder="Mật khẩu WiFi">
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <label for="wifi-security" class="form-label">Bảo mật</label>
+                            <select id="wifi-security" class="w-full border rounded-md compact-input">
+                                <option value="WPA">WPA/WPA2</option>
+                                <option value="WEP">WEP</option>
+                                <option value="nopass">Không mật khẩu</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="template-contact" class="template-block hidden mt-3">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                                <label for="contact-name" class="form-label">Họ tên</label>
+                                <input type="text" id="contact-name" class="w-full border rounded-md compact-input" placeholder="Nguyễn Văn A">
+                            </div>
+                            <div>
+                                <label for="contact-phone" class="form-label">Điện thoại</label>
+                                <input type="text" id="contact-phone" class="w-full border rounded-md compact-input" placeholder="0909xxxxxx">
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <label for="contact-email" class="form-label">Email</label>
+                            <input type="email" id="contact-email" class="w-full border rounded-md compact-input" placeholder="name@example.com">
+                        </div>
+                    </div>
+
+                    <div id="template-event" class="template-block hidden mt-3">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                                <label for="event-title" class="form-label">Tên sự kiện</label>
+                                <input type="text" id="event-title" class="w-full border rounded-md compact-input" placeholder="Open Day 2026">
+                            </div>
+                            <div>
+                                <label for="event-location" class="form-label">Địa điểm</label>
+                                <input type="text" id="event-location" class="w-full border rounded-md compact-input" placeholder="Hội trường A">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                            <div>
+                                <label for="event-start" class="form-label">Bắt đầu</label>
+                                <input type="datetime-local" id="event-start" class="w-full border rounded-md compact-input">
+                            </div>
+                            <div>
+                                <label for="event-end" class="form-label">Kết thúc</label>
+                                <input type="datetime-local" id="event-end" class="w-full border rounded-md compact-input">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+                        <div>
+                            <label class="form-label">Loại QR <span class="label-tip" title="QR động có thể thống kê và chỉnh sửa link về sau">?</span></label>
+                            <div id="qr-type-group" class="create-tools">
+                                <label class="radio-chip"><input type="radio" name="qr-type" value="dynamic" checked> QR Động</label>
+                                <label class="radio-chip"><input type="radio" name="qr-type" value="static"> QR Tĩnh</label>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="qr-color" class="form-label">Màu QR</label>
+                            <div class="color-control">
+                                <input type="color" id="qr-color" value="#000000" class="qr-color-input border rounded-md">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="advanced-settings" class="advanced-box mt-4">
+                        <h3 class="font-semibold text-sm mb-2">Thiết lập nâng cao (QR động)</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div>
+                                <label for="qr-expire-at" class="form-label">Hết hạn</label>
+                                <input type="datetime-local" id="qr-expire-at" class="w-full border rounded-md compact-input">
+                            </div>
+                            <div>
+                                <label for="qr-max-scans" class="form-label">Giới hạn lượt quét</label>
+                                <input type="number" id="qr-max-scans" min="1" placeholder="VD: 100" class="w-full border rounded-md compact-input">
+                            </div>
+                            <div>
+                                <label for="qr-password" class="form-label">Mật khẩu truy cập</label>
+                                <input type="text" id="qr-password" placeholder="Để trống nếu không dùng" class="w-full border rounded-md compact-input">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 flex flex-wrap gap-2">
+                        <button onclick="generateAndSaveQRCode()"
+                            class="primary-action bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                            Tạo và Lưu
+                        </button>
+                        <button id="preview-download-png" type="button" class="secondary-action">Tải PNG Preview</button>
+                        <!-- <button id="preview-download-svg" type="button" class="secondary-action">Tải SVG Preview</button> -->
+                    </div>
                 </div>
 
-                <button onclick="generateAndSaveQRCode()"
-                    class="w-full sm:w-auto bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
-                    Tạo và Lưu
-                </button>
-
-            </div>
-
-            <!-- Modal for Editing QR -->
-            <div id="edit-modal"
-                class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-                <div class="bg-white p-4 sm:p-6 rounded-md shadow-md w-full max-w-md">
-                    <h2 class="text-lg font-semibold mb-4">Chỉnh sửa Mã QR</h2>
-                    <div class="mb-4">
-                        <label for="edit-qr-name" class="block font-medium mb-2">Tên gợi nhớ</label>
-                        <input type="text" id="edit-qr-name" class="w-full p-3 border rounded-md">
+                <div class="lg:col-span-5 preview-zone" id="preview-zone">
+                    <h3 class="font-semibold mb-2">Preview QR realtime</h3>
+                    <div class="preview-box">
+                        <div id="preview-empty-state" class="preview-empty-state">
+                            <div class="preview-empty-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="3" width="7" height="7" rx="1.2"></rect>
+                                    <rect x="14" y="3" width="7" height="7" rx="1.2"></rect>
+                                    <rect x="3" y="14" width="7" height="7" rx="1.2"></rect>
+                                    <path d="M14 14h3v3"></path>
+                                    <path d="M21 14v7h-7"></path>
+                                    <path d="M17 17h.01"></path>
+                                </svg>
+                            </div>
+                            <p class="preview-empty-title">Chưa có dữ liệu preview</p>
+                            <p class="preview-empty-text">Nhập liên kết hoặc chọn template để hệ thống tạo QR xem trước.</p>
+                        </div>
+                        <img id="qr-live-preview" alt="QR preview" class="preview-img hidden" />
                     </div>
-                    <div class="mb-4">
-                        <label for="edit-qr-content" class="block font-medium mb-2">Nội dung <i>(đường dẫn liên
-                                kết)</i></label>
-                        <input type="url" id="edit-qr-content" class="w-full p-3 border rounded-md"
-                            pattern="https?://.+" placeholder="https:// hoặc http://" required
-                            oninput="validateURL(this)">
-                        <small id="url-error-edit" class="text-red-500 hidden">Vui lòng nhập đúng định dạng URL (bắt đầu
-                            bằng http:// hoặc https://)</small>
-                    </div>
-                    <div class="flex flex-col sm:flex-row justify-end gap-2">
-                        <button onclick="saveQRCodeEdit()"
-                            class="w-full sm:w-auto bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600">
-                            Lưu
-                        </button>
-                        <button onclick="closeEditModal()"
-                            class="w-full sm:w-auto bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600">
-                            Hủy
-                        </button>
-                    </div>
+                    <p id="preview-note" class="preview-note">Nhập nội dung để xem preview.</p>
                 </div>
             </div>
-        </div>
+        </section>
+
+        <section class="panel-box">
+            <div class="flex flex-col gap-3 mb-4">
+                <div class="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3">
+                    <h2 class="text-xl font-semibold">Danh sách mã QR của bạn</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-2 w-full xl:max-w-4xl">
+                        <input type="text" id="search-qr" placeholder="Tìm theo tên..." class="border rounded-xl compact-input" oninput="filterQRCodes()">
+                        <select id="filter-type" class="border rounded-xl compact-input" onchange="filterQRCodes()">
+                            <option value="all">Tất cả loại</option>
+                            <option value="dynamic">QR động</option>
+                            <option value="static">QR tĩnh</option>
+                        </select>
+                        <select id="filter-date" class="border rounded-xl compact-input" onchange="filterQRCodes()">
+                            <option value="all">Mọi thời gian</option>
+                            <option value="today">Hôm nay</option>
+                            <option value="7">7 ngày gần đây</option>
+                            <option value="30">30 ngày gần đây</option>
+                        </select>
+                        <select id="sort-by" class="border rounded-xl compact-input" onchange="filterQRCodes()">
+                            <option value="newest">Mới nhất</option>
+                            <option value="oldest">Cũ nhất</option>
+                            <option value="traffic">Lượt quét cao nhất</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <button id="bulk-delete-btn" type="button" class="secondary-action danger-action">Xóa đã chọn</button>
+                    <!-- <button id="bulk-export-btn" type="button" class="secondary-action">Xuất Excel đã chọn</button> -->
+                </div>
+            </div>
+
+            <div id="qr-list-container" class="table-wrap">
+                <table class="qr-table">
+                    <thead>
+                        <tr>
+                            <th><input id="select-all-qr" type="checkbox" title="Chọn tất cả"></th>
+                            <th>QR</th>
+                            <th>Tên</th>
+                            <th>Loại</th>
+                            <th>Danh mục</th>
+                            <th>Ngày tạo</th>
+                            <th>Analytics</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="qr-list"></tbody>
+                </table>
+            </div>
+        </section>
     </main>
 
+    <div id="edit-modal" class="hidden fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
+        <div class="bg-white p-4 sm:p-6 rounded-xl shadow-md w-full max-w-4xl max-h-[88vh] overflow-y-auto">
+            <h2 class="text-lg font-semibold mb-4">Chỉnh sửa Mã QR</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                    <label for="edit-qr-name" class="form-label">Tên gợi nhớ</label>
+                    <input type="text" id="edit-qr-name" class="w-full border rounded-md compact-input">
+                </div>
+                <div>
+                    <label for="edit-qr-category" class="form-label">Danh mục</label>
+                    <div class="category-field">
+                        <input type="text" id="edit-qr-category" class="w-full border rounded-md compact-input" autocomplete="off">
+                        <div id="edit-qr-category-menu" class="category-menu hidden"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-3 mt-3">
+                <div>
+                    <label for="edit-content-mode" class="form-label">Template nội dung</label>
+                    <select id="edit-content-mode" class="w-full border rounded-md compact-input">
+                        <option value="url">URL</option>
+                        <option value="wifi">WiFi</option>
+                        <option value="contact">Contact</option>
+                        <option value="event">Event</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="edit-template-url" class="template-block mt-3">
+                <label for="edit-qr-content" class="form-label">Nội dung liên kết (URL)</label>
+                <input type="url" id="edit-qr-content" class="w-full border rounded-md compact-input"
+                    pattern="https?://.+" placeholder="https:// hoặc http://" required oninput="validateURL(this)">
+                <small id="url-error-edit" class="text-red-500 hidden">Vui lòng nhập đúng định dạng URL (bắt đầu bằng http:// hoặc https://)</small>
+            </div>
+
+            <div id="edit-template-wifi" class="template-block hidden mt-3">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                        <label for="edit-wifi-ssid" class="form-label">WiFi SSID</label>
+                        <input type="text" id="edit-wifi-ssid" class="w-full border rounded-md compact-input" placeholder="Tên WiFi">
+                    </div>
+                    <div>
+                        <label for="edit-wifi-password" class="form-label">WiFi Password</label>
+                        <input type="text" id="edit-wifi-password" class="w-full border rounded-md compact-input" placeholder="Mật khẩu WiFi">
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <label for="edit-wifi-security" class="form-label">Bảo mật</label>
+                    <select id="edit-wifi-security" class="w-full border rounded-md compact-input">
+                        <option value="WPA">WPA/WPA2</option>
+                        <option value="WEP">WEP</option>
+                        <option value="nopass">Không mật khẩu</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="edit-template-contact" class="template-block hidden mt-3">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                        <label for="edit-contact-name" class="form-label">Họ tên</label>
+                        <input type="text" id="edit-contact-name" class="w-full border rounded-md compact-input" placeholder="Nguyễn Văn A">
+                    </div>
+                    <div>
+                        <label for="edit-contact-phone" class="form-label">Điện thoại</label>
+                        <input type="text" id="edit-contact-phone" class="w-full border rounded-md compact-input" placeholder="0909xxxxxx">
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <label for="edit-contact-email" class="form-label">Email</label>
+                    <input type="email" id="edit-contact-email" class="w-full border rounded-md compact-input" placeholder="name@example.com">
+                </div>
+            </div>
+
+            <div id="edit-template-event" class="template-block hidden mt-3">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                        <label for="edit-event-title" class="form-label">Tên sự kiện</label>
+                        <input type="text" id="edit-event-title" class="w-full border rounded-md compact-input" placeholder="Open Day 2026">
+                    </div>
+                    <div>
+                        <label for="edit-event-location" class="form-label">Địa điểm</label>
+                        <input type="text" id="edit-event-location" class="w-full border rounded-md compact-input" placeholder="Hội trường A">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                    <div>
+                        <label for="edit-event-start" class="form-label">Bắt đầu</label>
+                        <input type="datetime-local" id="edit-event-start" class="w-full border rounded-md compact-input">
+                    </div>
+                    <div>
+                        <label for="edit-event-end" class="form-label">Kết thúc</label>
+                        <input type="datetime-local" id="edit-event-end" class="w-full border rounded-md compact-input">
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+                <div>
+                    <label class="form-label">Loại QR</label>
+                    <div id="edit-qr-type-group" class="create-tools">
+                        <label class="radio-chip"><input type="radio" name="edit-qr-type" value="dynamic" checked> QR Động</label>
+                        <label class="radio-chip"><input type="radio" name="edit-qr-type" value="static"> QR Tĩnh</label>
+                    </div>
+                    <small id="edit-note" class="text-gray-500"></small>
+                </div>
+                <div>
+                    <label for="edit-qr-color" class="form-label">Màu QR</label>
+                    <div class="color-control">
+                        <input type="color" id="edit-qr-color" value="#000000" class="qr-color-input border rounded-md">
+                    </div>
+                </div>
+            </div>
+
+            <div id="edit-advanced-settings" class="advanced-box mt-4">
+                <h3 class="font-semibold text-sm mb-2">Thiết lập nâng cao (QR động)</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                        <label for="edit-qr-expire-at" class="form-label">Hết hạn</label>
+                        <input type="datetime-local" id="edit-qr-expire-at" class="w-full border rounded-md compact-input">
+                    </div>
+                    <div>
+                        <label for="edit-qr-max-scans" class="form-label">Giới hạn lượt quét</label>
+                        <input type="number" id="edit-qr-max-scans" min="1" placeholder="VD: 100" class="w-full border rounded-md compact-input">
+                    </div>
+                    <div>
+                        <label for="edit-qr-password" class="form-label">Mật khẩu truy cập</label>
+                        <input type="text" id="edit-qr-password" placeholder="Để trống nếu không dùng" class="w-full border rounded-md compact-input">
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row justify-end gap-2 mt-5">
+                <button onclick="saveQRCodeEdit()" class="w-full sm:w-auto bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600">Lưu</button>
+                <button onclick="closeEditModal()" class="w-full sm:w-auto bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600">Hủy</button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/fontfaceobserver/2.1.0/fontfaceobserver.standalone.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/intro.js/minified/intro.min.js"></script>
     <script type="module" src="./js/create_qrcode.js"></script>
 
