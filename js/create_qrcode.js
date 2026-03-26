@@ -597,6 +597,37 @@ async function generateListPreview(qr) {
     return dataUrl;
 }
 
+function getPreviewPlaceholder() {
+    return "data:image/svg+xml;utf8," + encodeURIComponent(`
+        <svg xmlns="http://www.w3.org/2000/svg" width="90" height="90" viewBox="0 0 90 90">
+            <rect width="90" height="90" rx="12" fill="#eff6ff"/>
+            <rect x="12" y="12" width="18" height="18" rx="3" fill="#bfdbfe"/>
+            <rect x="60" y="12" width="18" height="18" rx="3" fill="#bfdbfe"/>
+            <rect x="12" y="60" width="18" height="18" rx="3" fill="#bfdbfe"/>
+            <path d="M45 24h6v6h-6zM39 36h6v6h-6zM51 36h6v6h-6zM45 48h6v6h-6z" fill="#93c5fd"/>
+        </svg>
+    `);
+}
+
+function scheduleRowPreview(qr, img) {
+    const run = async () => {
+        try {
+            const previewDataUrl = await generateListPreview(qr);
+            if (img.isConnected) {
+                img.src = previewDataUrl;
+            }
+        } catch (error) {
+            // Keep placeholder if preview generation fails.
+        }
+    };
+
+    if (typeof window.requestIdleCallback === "function") {
+        window.requestIdleCallback(run, { timeout: 300 });
+    } else {
+        window.setTimeout(run, 0);
+    }
+}
+
 function renderEmptyTable(message) {
     document.getElementById("qr-list").innerHTML = `<tr><td colspan="8" class="qr-empty">${message}</td></tr>`;
 }
@@ -677,10 +708,8 @@ function updateSelectAllState() {
     selectAll.indeterminate = selectedVisibleCount > 0 && selectedVisibleCount < visibleKeys.length;
 }
 
-async function renderQRCodeItem(qr) {
+function renderQRCodeItem(qr) {
     try {
-        const previewDataUrl = await generateListPreview(qr);
-
         const tr = document.createElement("tr");
         tr.className = "qr-item";
 
@@ -697,11 +726,12 @@ async function renderQRCodeItem(qr) {
 
         const previewCell = document.createElement("td");
         const img = document.createElement("img");
-        img.src = previewDataUrl;
+        img.src = getPreviewPlaceholder();
         img.className = "qr-thumb";
         img.loading = "lazy";
         img.decoding = "async";
         previewCell.appendChild(img);
+        scheduleRowPreview(qr, img);
 
         const nameCell = document.createElement("td");
         nameCell.className = "qr-name";
@@ -735,7 +765,7 @@ async function renderQRCodeItem(qr) {
     }
 }
 
-async function renderQRCodeList() {
+function renderQRCodeList() {
     const qrList = document.getElementById("qr-list");
     const visibleList = getVisibleList();
     if (!visibleList.length) {
@@ -745,9 +775,11 @@ async function renderQRCodeList() {
     }
 
     qrList.innerHTML = "";
-    const rows = await Promise.all(visibleList.map((qr) => renderQRCodeItem(qr)));
     const fragment = document.createDocumentFragment();
-    rows.forEach((row) => { if (row) fragment.appendChild(row); });
+    visibleList.forEach((qr) => {
+        const row = renderQRCodeItem(qr);
+        if (row) fragment.appendChild(row);
+    });
     qrList.appendChild(fragment);
     updateSelectAllState();
 }
@@ -764,7 +796,7 @@ async function loadQRCodes(userId) {
         selectedQRKeys = new Set([...selectedQRKeys].filter((key) => allQRCodes.some((item) => item.key === key)));
         updateCategorySuggestions();
 
-        await renderQRCodeList();
+        renderQRCodeList();
     } catch (error) {
         renderEmptyTable("Không thể tải danh sách QR.");
         showToast("error", "Tải danh sách QR thất bại, vui lòng thử lại.");
@@ -1383,7 +1415,7 @@ function initFormListeners() {
     initCategoryField("qr-category", "qr-category-menu");
     initCategoryField("edit-qr-category", "edit-qr-category-menu");
 
-    document.getElementById("content-mode").addEventListener("change", () => {
+    document.getElementById("content-mode")?.addEventListener("change", () => {
         updateTemplateUI();
         debouncedPreview();
     });
@@ -1413,12 +1445,12 @@ function initFormListeners() {
             element.addEventListener("change", debouncedPreview);
         });
 
-    document.getElementById("preview-download-png").addEventListener("click", downloadPreviewPNG);
-    document.getElementById("preview-download-svg").addEventListener("click", downloadPreviewSVG);
-    document.getElementById("bulk-delete-btn").addEventListener("click", deleteBulkQRCodes);
-    document.getElementById("bulk-export-btn").addEventListener("click", exportSelectedQRCodes);
+    document.getElementById("preview-download-png")?.addEventListener("click", downloadPreviewPNG);
+    document.getElementById("preview-download-svg")?.addEventListener("click", downloadPreviewSVG);
+    document.getElementById("bulk-delete-btn")?.addEventListener("click", deleteBulkQRCodes);
+    document.getElementById("bulk-export-btn")?.addEventListener("click", exportSelectedQRCodes);
 
-    document.getElementById("select-all-qr").addEventListener("change", (event) => {
+    document.getElementById("select-all-qr")?.addEventListener("change", (event) => {
         const visibleKeys = getVisibleList().map((item) => item.key);
         if (event.target.checked) visibleKeys.forEach((key) => selectedQRKeys.add(key));
         else visibleKeys.forEach((key) => selectedQRKeys.delete(key));
@@ -1461,7 +1493,7 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
-document.getElementById("logout-btn").addEventListener("click", async () => {
+document.getElementById("logout-btn")?.addEventListener("click", async () => {
     try {
         await logoutAndDisconnect("manual");
     } catch (error) {
